@@ -41,7 +41,7 @@ class GspnClient {
         this.context = null;
         this.browser = null;
 
-        this.browser = await chromium.launch({headless: false});
+        this.browser = await chromium.launch({headless: true});
 
         const storageState = fs.existsSync(this.config.storagePath)
             ? this.config.storagePath
