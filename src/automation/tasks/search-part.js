@@ -1,8 +1,8 @@
-export async function searchPart(browser, config, keyword) {
+export async function searchPart(context, config, keyword) {
     console.log('🔎 Searching part:', keyword);
 
     // 创建一个新的独立 page
-    const page = await browser.newPage();
+    const page = await context.newPage();
 
     try {
         await page.goto(config.partsSearchUrl + `?dataMode=D&partNo=${keyword}`);

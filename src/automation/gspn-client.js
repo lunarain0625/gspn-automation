@@ -105,8 +105,9 @@ class GspnClient {
     async searchPart(keyword) {
         this.isBusy = true;
         try {
-            console.log('🧩 searchPart using browser:', !!this.browser);
-            return await searchPart(this.browser, this.config, keyword);
+            return await this.withBusinessPage(async (businessPage) => {
+                return await searchPart(this.context, this.config, keyword);
+            });
         } finally {
             this.isBusy = false;
             await this.keepAliveOnce();
