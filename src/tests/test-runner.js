@@ -9,10 +9,10 @@ async function run() {
         await gspnClient.init();
 
         // 👉 在这里控制要跑哪个测试
-        // await testSearchPart(gspnClient);
+        await testSearchPart(gspnClient);
         // await testCreateJob(gspnClient);
         // await testUpdateJob(gspnClient);
-        await testUpdateRepairInfo();
+        // await testUpdateRepairInfo();
 
 
         console.log('\n✅ All tests done');

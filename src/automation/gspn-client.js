@@ -3,7 +3,7 @@ import fs from 'fs';
 import {searchPart} from './tasks/search-part.js';
 import {createJob} from './tasks/create-job.js';
 import {findJob} from './tasks/find-job.js';
-import { updateJobRepairInfo } from './tasks/update-job-repair-info.js';
+import {updateJobRepairInfo} from './tasks/update-job-repair-info.js';
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -40,8 +40,7 @@ class GspnClient {
         this.page = null;
         this.context = null;
         this.browser = null;
-
-        this.browser = await chromium.launch({headless: true});
+        this.browser = await chromium.launch({headless: process.env.PLAYWRIGHT_HEADLESS !== 'false'});
 
         const storageState = fs.existsSync(this.config.storagePath)
             ? this.config.storagePath
