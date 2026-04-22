@@ -199,17 +199,49 @@ class GspnClient {
     }
 
     async keepAliveOnce() {
-        if (this.isBusy || !this.page) return;
+
+        if (this.isBusy || !this.page || this.page.isClosed()) return;
 
         try {
+
             await this.page.goto(this.config.dashboardUrl, {
+
                 waitUntil: 'domcontentloaded'
+
             });
-            console.log('🫀 keep alive');
-        } catch (e) {
+
+            console.log('🫀 keep alive: dashboard refreshed');
+
+            if (this.businessPage && !this.businessPage.isClosed()) {
+
+                try {
+
+                    await this.businessPage.close();
+
+                    console.log('🔄 keep alive: old business page closed');
+
+                } catch (closeError) {
+
+                    console.warn('⚠️ keep alive: failed to close business page:', closeError.message);
+
+                }
+
+            }
+
             this.businessPage = null;
+
+            await this.ensureBusinessPage();
+
+            console.log('🚀 keep alive: fresh business page opened');
+
+        } catch (e) {
+
+            this.businessPage = null;
+
             console.log('⚠️ keep alive failed');
+
         }
+
     }
 
     startKeepAlive() {
