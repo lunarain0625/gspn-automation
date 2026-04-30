@@ -189,10 +189,11 @@ export async function createJob(businessPage, config, data) {
     const checkResult = await runWarrantyCheck(businessPage);
     console.log('Warranty Check Result:', checkResult);
 
-    await businessPage.pause();
+    // await businessPage.pause();
 
     return {
         success: true,
-        checkResult
+        checkResult,
+        serviceNo: "4432348828"
     };
 }
