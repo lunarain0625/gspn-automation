@@ -11,7 +11,7 @@ const CONFIG = {
     dashboardUrl: 'https://gspn2.samsungcsportal.com/main.jsp',
     partsSearchUrl: 'https://biz2.samsungcsportal.com/master/part/GeneralPartInfo.jsp',
     storagePath: 'state.json',
-    sessionCheckIntervalMs: 2 * 60 * 1000,
+    sessionCheckIntervalMs: 5 * 60 * 1000,
     loginTimeoutMs: 180000,
     defaultTimeoutMs: 30000,
     credentials: {
@@ -199,7 +199,7 @@ class GspnClient {
     }
 
     async keepAliveOnce() {
-
+        console.log("isBusy:", this.isBusy, "page alive:", this.page && !this.page.isClosed());
         if (this.isBusy || !this.page || this.page.isClosed()) return;
 
         try {

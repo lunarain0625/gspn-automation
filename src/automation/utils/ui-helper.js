@@ -35,7 +35,7 @@ export async function clickUntil({
     isReady,
     maxAttempts = 10,
     clickDelay = 100,
-    settleTimeoutMs = 500,
+    settleTimeoutMs = 1000,
     actionLabel = 'trigger',
     loadingOverlay = page.locator('#progressloading'),
     readyTimeoutMs = 4000
