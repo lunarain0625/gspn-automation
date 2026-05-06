@@ -2,6 +2,7 @@ import {
     clickUntil,
     clickUntilVisible,
     fillVisibleInputById,
+    findFirstVisible,
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
 
@@ -85,36 +86,56 @@ async function fillCustomerPopup(page2, customer) {
 }
 
 async function saveCustomerPopup(page2) {
-    const saveLink = page2.getByRole('link', { name: 'Save' });
-    const confirmLink = page2.getByRole('link', { name: 'Confirm' });
     const loadingOverlay = page2.locator('#progressloading');
+
+    // GSPN legacy pages can contain duplicated or temporarily hidden Save links.
+    // Pick the currently visible Save link instead of relying on a single role locator.
+    await loadingOverlay.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+    const saveLinks = page2.getByRole('link', { name: 'Save' });
+    const saveLinkCount = await saveLinks.count().catch(() => 0);
+    console.log(`💾 Save links found: ${saveLinkCount}`);
+
+    const saveLink = await findFirstVisible(saveLinks);
+
+    if (!saveLink) {
+        console.log('❌ Visible Save link not found. Current URL:', page2.url());
+        throw new Error('Visible Save link not found in customer popup');
+    }
+
+    const confirmLinks = page2.getByRole('link', { name: 'Confirm' });
 
     await clickUntilVisible({
         trigger: saveLink,
-        target: confirmLink,
+        target: confirmLinks.first(),
         page: page2,
         actionLabel: 'Save',
-        readyTimeoutMs: 5000,
+        readyTimeoutMs: 8000,
         loadingOverlay
     });
+
+    await loadingOverlay.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+    const confirmLink = await findFirstVisible(confirmLinks);
+
+    if (!confirmLink) {
+        console.log('❌ Visible Confirm link not found after Save. Current URL:', page2.url());
+        throw new Error('Visible Confirm link not found after Save');
+    }
 
     await clickUntil({
         trigger: confirmLink,
         page: page2,
         actionLabel: 'Confirm',
-        readyTimeoutMs: 8000,
+        readyTimeoutMs: 10000,
         loadingOverlay,
         isReady: async () => {
             if (page2.isClosed()) {
                 return true;
             }
 
-            const confirmVisible = await confirmLink.isVisible().catch(() => false);
-            if (!confirmVisible) {
-                return true;
-            }
-
-            return false;
+            const confirmStillVisible = await confirmLink.isVisible().catch(() => false);
+            return !confirmStillVisible;
         }
     });
 }
