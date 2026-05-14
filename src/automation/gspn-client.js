@@ -123,6 +123,7 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
+            console.log('✅ Job creation completed, keeping session alive...');
             await this.keepAliveOnce();
         }
     }

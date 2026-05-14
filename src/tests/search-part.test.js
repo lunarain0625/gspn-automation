@@ -19,19 +19,21 @@ export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 
     const data = {
-        partNo: 'GH82-38875A', // 👉 你常用测试值
-        quantity: 1,
-        solvupId: '1234567890', // 👉 你常用测试值
-        device: {
-            imei: '350956651025131',
-        },
-        customer: {
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'oXc5Q@example.com',
-            phone: '0400000000',
-            address: {street: '12 street st', city: 'Donvale', state: 'VIC', postalCode: '3111', country: 'Australia'},
-        }
+        source: 'SOLVUP',
+        solvupId: '00000002',
+        productSerialNumber: '350852990546988',
+        warrantyType:'OW',
+        customerFirstName: 'HARRY',
+        customerLastName: 'WANG',
+        customerEmail: 'lunarain@live.com',
+        customerPhone: '0420790625',
+
+        customerAddress: '12 street st',
+        customerSuburb: 'Donvale',
+        customerState: 'VIC',
+        customerPostCode: '3111',
+
+        purchaseDate: '01.01.2025',
     };
 
     const result = await client.createJob(data);
