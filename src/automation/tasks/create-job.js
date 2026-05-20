@@ -6,6 +6,7 @@ import {
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
 
+
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
         .locator('iframe[name="leftMenus"]')
@@ -234,23 +235,24 @@ export async function createJob(businessPage, config, data) {
 
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
+    if (checkResult !== data.warrantyType) {
+        throw new Error('❌ Warranty check failed');
+    }
 
-
+    //Finally, save the service order and extract the service number from the confirmation message
     const saveLink = rightContentsFrame.getByRole('row', {
         name: 'CREATE NEW SERVICE ORDER     Save',
         exact: true
     }).getByRole('link')
-    saveLink.click();
-
+    await saveLink.click();
     console.log('saveLink count: ', await saveLink.count());
     const serviceTextLocator = rightContentsFrame.getByText(/\[\s*\d+/);
     await serviceTextLocator.waitFor();
     const serviceText = await serviceTextLocator.textContent();
     const serviceNo = serviceText?.match(/\[\s*(\d+)/)?.[1];
     console.log('Extracted service number:', serviceNo);
-
-    if (checkResult !== data.warrantyType) {
-        throw new Error('❌ Warranty check failed');
+    if (!serviceNo) {
+        throw new Error('Service number not found in confirmation message');
     }
 
     return {

@@ -12,7 +12,7 @@ function getLeftMenuScrollFrame(businessPage) {
         .contentFrame();
 }
 
-export async function findJob(businessPage, config, data) {
+export async function findJob(businessPage, data) {
 
     await businessPage.waitForLoadState('domcontentloaded');
     await businessPage.waitForSelector('iframe[name="leftMenus"]');
@@ -25,7 +25,7 @@ export async function findJob(businessPage, config, data) {
         exact: true
     }).click();
 
-    await rightContentsFrame.locator('#service_order_no').fill(`4432348828`);
+    await rightContentsFrame.locator('#service_order_no').fill(data.vendorRa);
 
     const searchLink = rightContentsFrame.getByRole('link', {name: 'Unique Search'});
     const editLink = rightContentsFrame.getByRole('link', {name: 'Edit'});
@@ -41,7 +41,7 @@ export async function findJob(businessPage, config, data) {
     await editLink.click();
 
     const title = rightContentsFrame.getByText('SERVICE ORDER DETAIL INFORMATION');
-    businessPage.pause();
+    // await businessPage.pause();
     try {
         await title.waitFor({ state: 'visible', timeout: 8000 });
 

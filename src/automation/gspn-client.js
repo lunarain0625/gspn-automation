@@ -3,6 +3,7 @@ import fs from 'fs';
 import {searchPart} from './tasks/search-part.js';
 import {createJob} from './tasks/create-job.js';
 import {findJob} from './tasks/find-job.js';
+import {closeJob} from './tasks/close-job.js';
 import {updateJobRepairInfo} from './tasks/update-job-repair-info.js';
 
 const CONFIG = {
@@ -141,7 +142,8 @@ class GspnClient {
                 switch (action) {
                     case 'repair_info':
                         return await updateJobRepairInfo(businessPage, data);
-
+                    case 'test':
+                        return await updateJobRepairInfo(businessPage, data);
                     default:
                         throw new Error(`Unknown action: ${action}`);
                 }
@@ -152,6 +154,25 @@ class GspnClient {
             await this.keepAliveOnce();
         }
     }
+
+
+    async closeJob(data) {
+        this.isBusy = true;
+
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+
+                // 1️⃣ 先找到 job
+                await findJob(businessPage, data);
+                await closeJob(businessPage, data);
+            });
+
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
+
 
     async checkSessionAlive() {
         await this.page.goto(this.config.dashboardUrl, {
