@@ -74,9 +74,9 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('#IRIS_SYMPT').selectOption(data.irisSympt);
     await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption(data.repairCode);
     await rightFrame.locator('#IRIS_REPAIR').selectOption(config.IRIS_REPAIR);
-    await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCode1);
-    await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCode2);
-    await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCode3);
+    await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCat1);
+    await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
+    await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCat3);
     const successDialogPromise = businessPage.waitForEvent('dialog', {
         timeout: 15000,
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')
@@ -112,5 +112,6 @@ export async function updateJobRepairInfo(businessPage, data) {
     // await businessPage.pause();
     return {
         success: true,
+        message: 'job repair info updated successfully'
     };
 }

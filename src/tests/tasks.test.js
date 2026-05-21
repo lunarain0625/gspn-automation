@@ -55,9 +55,9 @@ export async function testUpdateJob(client) {
         warrantyType: 'OW',
         repairCode: 'SRC038',
         symptomName: 'NO CHARGING',
-        symptomCode1: 'L2',
-        symptomCode2: '02',
-        symptomCode3: '02',
+        symptomCat1: 'L2',
+        symptomCat2: '02',
+        symptomCat3: '02',
         irisSymptQcode: 'SRC505',
         irisSympt: '120',
         diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
@@ -76,7 +76,7 @@ export async function testUpdateJob(client) {
     console.log('✅ searchJobBySo passed\n');
 }
 
-export async function testCloseJob(client) {
+export async function testCompleteJob(client) {
 
     const data = {
         source: 'SOLVUP',
@@ -85,7 +85,7 @@ export async function testCloseJob(client) {
         warrantyType: 'OW',
         repairCode: 'SRC038',
     };
-    const result = await client.closeJob(data);
+    const result = await client.completeJob(data);
 
     console.log('Result:', result);
 

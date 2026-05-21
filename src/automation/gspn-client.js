@@ -5,6 +5,8 @@ import {createJob} from './tasks/create-job.js';
 import {findJob} from './tasks/find-job.js';
 import {closeJob} from './tasks/close-job.js';
 import {updateJobRepairInfo} from './tasks/update-job-repair-info.js';
+import {completeJob} from "./tasks/complete-job.js";
+import {deliverGood} from "./tasks/deliver-good.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -156,7 +158,7 @@ class GspnClient {
     }
 
 
-    async closeJob(data) {
+    async completeJob(data) {
         this.isBusy = true;
 
         try {
@@ -164,7 +166,7 @@ class GspnClient {
 
                 // 1️⃣ 先找到 job
                 await findJob(businessPage, data);
-                await closeJob(businessPage, data);
+                return await completeJob(businessPage, data);
             });
 
         } finally {
@@ -173,6 +175,22 @@ class GspnClient {
         }
     }
 
+    async deliverGood(data) {
+        this.isBusy = true;
+
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+
+                // 1️⃣ 先找到 job
+                await findJob(businessPage, data);
+                return await deliverGood(businessPage, data);
+            });
+
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
 
     async checkSessionAlive() {
         await this.page.goto(this.config.dashboardUrl, {

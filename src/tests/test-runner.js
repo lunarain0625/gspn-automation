@@ -1,5 +1,5 @@
 import {gspnClient} from '../automation/gspn-client.js';
-import {testCreateJob, testUpdateJob, testSearchPart, testCloseJob} from './tasks.test.js';
+import {testCreateJob, testUpdateJob, testSearchPart, testCompleteJob} from './tasks.test.js';
 
 async function run() {
     try {
@@ -10,7 +10,7 @@ async function run() {
 
         // await testCreateJob(gspnClient);
         await testUpdateJob(gspnClient);
-        await testCloseJob(gspnClient);
+        await testCompleteJob(gspnClient);
         console.log('\n✅ All tests done');
     } catch (err) {
         console.error('❌ Test failed:', err);
