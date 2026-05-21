@@ -244,12 +244,30 @@ export async function createJob(businessPage, config, data) {
         name: 'CREATE NEW SERVICE ORDER     Save',
         exact: true
     }).getByRole('link')
-    await saveLink.click();
+
     console.log('saveLink count: ', await saveLink.count());
-    const serviceTextLocator = rightContentsFrame.getByText(/\[\s*\d+/);
+    const saveButton = rightContentsFrame
+        .locator('#divButtons')
+        .getByRole('button', {name: 'Save'});
+    await clickUntilVisible({
+        trigger: saveLink,
+        page: businessPage,
+        actionLabel: 'Save New Job',
+        target: saveButton
+    })
+
+
+    const serviceTextLocator = rightContentsFrame.locator(
+        'span[title="Object ID // Wty Bill No // ASC Job No // Create Date"]'
+    );
     await serviceTextLocator.waitFor();
     const serviceText = await serviceTextLocator.textContent();
-    const serviceNo = serviceText?.match(/\[\s*(\d+)/)?.[1];
+
+    // Example:
+    // [ 4435721718 // // TESTS00000010 // 21.05.2026 15:53:49 ]
+    const serviceNo = serviceText
+        ?.replace(/\u00a0/g, ' ')
+        .match(/\[\s*(\d+)/)?.[1];
     console.log('Extracted service number:', serviceNo);
     if (!serviceNo) {
         throw new Error('Service number not found in confirmation message');

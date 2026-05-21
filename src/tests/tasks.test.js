@@ -14,26 +14,25 @@ export async function testSearchPart(client) {
     console.log('✅ searchPart passed\n');
 }
 
-
 export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 
     const data = {
         source: 'SOLVUP',
-        solvupId: '00000003',
-        productSerialNumber: '350852990546988',
+        solvupId: '00000012',
+        productSerialNumber: '352520440777564',
         warrantyType: 'OW',
-        customerFirstName: 'HARRY',
-        customerLastName: 'WANG',
+        customerFirstName: 'HARRY6',
+        customerLastName: 'WANG6',
         customerEmail: 'lunarain@live.com',
         customerPhone: '0420790625',
 
-        customerAddress: '12 street st',
+        customerAddress: '121 street st',
         customerSuburb: 'Donvale',
         customerState: 'VIC',
         customerPostCode: '3111',
 
-        purchaseDate: '01.01.2023',
+        purchaseDate: '01.01.2024',
     };
 
     const result = await client.createJob(data);
@@ -51,8 +50,8 @@ export async function testUpdateJob(client) {
 
     const data = {
         source: 'SOLVUP',
-        solvupId: '00000003',
-        vendorRa: '4435641915',
+        solvupId: '00000004',
+        vendorRa: '4435728249',
         warrantyType: 'OW',
         repairCode: 'SRC038',
         symptomName: 'NO CHARGING',
@@ -62,11 +61,31 @@ export async function testUpdateJob(client) {
         irisSymptQcode: 'SRC505',
         irisSympt: '120',
         diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
-        purchaseDate: '14.10.2022',
+        purchaseDate: '',
         productSerialNumber: '350956651025131',
         faultReport:"no power no charging",
     };
     const result = await client.updateJob('test', data);
+
+    console.log('Result:', result);
+
+    if (!result?.success) {
+        throw new Error('❌ searchJobBySo failed');
+    }
+
+    console.log('✅ searchJobBySo passed\n');
+}
+
+export async function testCloseJob(client) {
+
+    const data = {
+        source: 'SOLVUP',
+        solvupId: '00000003',
+        vendorRa: '4435728249',
+        warrantyType: 'OW',
+        repairCode: 'SRC038',
+    };
+    const result = await client.closeJob(data);
 
     console.log('Result:', result);
 

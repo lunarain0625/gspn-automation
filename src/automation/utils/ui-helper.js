@@ -30,62 +30,71 @@ export async function clickUntilEditable({
 }
 
 export async function clickUntil({
-    trigger,
-    page,
-    isReady,
-    maxAttempts = 10,
-    clickDelay = 100,
-    settleTimeoutMs = 1000,
-    actionLabel = 'trigger',
-    loadingOverlay = page.locator('#progressloading'),
-    readyTimeoutMs = 4000
-}) {
-    await trigger.waitFor({ state: 'visible' });
+                                     trigger,
+                                     page,
+                                     isReady,
+                                     maxAttempts = 10,
+                                     clickDelay = 100,
+                                     settleTimeoutMs = 3000,
+                                     actionLabel = 'trigger',
+                                     loadingOverlay = page.locator('iframe[name="rightContents"]')
+                                         .contentFrame().locator('#progressloading'),
+                                     readyTimeoutMs = 30000
+                                 }) {
+    await trigger.waitFor({state: 'visible'});
     await trigger.scrollIntoViewIfNeeded();
-
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         console.log(`🔁 ${actionLabel} click attempt ${attempt}`);
-
-        // Before clicking, wait for any loading overlay to disappear.
-        await loadingOverlay.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
-
+        await loadingOverlay.waitFor({
+            state: 'hidden',
+            timeout: 10000
+        }).catch(() => {
+        });
         try {
-            await trigger.click({ delay: clickDelay, timeout: 3000 });
+            await trigger.click({delay: clickDelay, force: true});
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
 
-            // Legacy pages sometimes leave a loading mask over the page.
-            // Wait once more for it to disappear, then retry the click loop.
+            console.error(`⚠️ ${actionLabel} click failed on attempt ${attempt}: ${message}`);
+
+            // Sometimes Playwright reports click failure,
+            // but the UI action was actually triggered successfully.
+            const readyAfterClickFailure = await isReady().catch(() => false);
+
+            if (readyAfterClickFailure) {
+                console.log(`✅ ${actionLabel} already ready after click failure`);
+                return;
+            }
+
             if (message.includes('intercepts pointer events')) {
                 console.log(`⚠️ ${actionLabel} click intercepted by overlay, waiting and retrying...`);
-                await loadingOverlay.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {});
+
+                await loadingOverlay.waitFor({
+                    state: 'hidden',
+                    timeout: 10000
+                }).catch(() => {
+                });
+
                 await page.waitForTimeout(settleTimeoutMs);
                 continue;
             }
 
             throw error;
         }
-
-        await page.waitForLoadState('networkidle').catch(() => {});
-
-        try {
-            await page.waitForFunction(async () => {
-                return await Promise.resolve(true);
-            }, { timeout: 50 }).catch(() => {});
-        } catch {}
-
-        // After clicking, allow legacy UI time to finish loading and reveal the next state.
         const startedAt = Date.now();
         while (Date.now() - startedAt < readyTimeoutMs) {
-            await loadingOverlay.waitFor({ state: 'hidden', timeout: 1000 }).catch(() => {});
-
+            await loadingOverlay.waitFor({
+                state: 'hidden',
+                timeout: 10000
+            }).catch(() => {
+            });
             const ready = await isReady().catch(() => false);
             if (ready) {
                 console.log(`✅ ${actionLabel} click effective`);
                 return;
             }
-
             await page.waitForTimeout(settleTimeoutMs);
+            console.log(`settle timeout passed, re-checking ready state...`)
         }
     }
 
@@ -93,16 +102,16 @@ export async function clickUntil({
 }
 
 export async function clickUntilVisible({
-    trigger,
-    target,
-    page,
-    maxAttempts = 3,
-    clickDelay = 100,
-    settleTimeoutMs = 500,
-    actionLabel = 'trigger',
-    loadingOverlay,
-    readyTimeoutMs = 4000
-}) {
+                                            trigger,
+                                            target,
+                                            page,
+                                            maxAttempts = 10,
+                                            clickDelay = 100,
+                                            settleTimeoutMs = 3000,
+                                            actionLabel = 'trigger',
+                                            loadingOverlay,
+                                            readyTimeoutMs = 30000
+                                        }) {
     return clickUntil({
         trigger,
         page,
@@ -117,16 +126,16 @@ export async function clickUntilVisible({
 }
 
 export async function clickUntilEnabled({
-    trigger,
-    target,
-    page,
-    maxAttempts = 3,
-    clickDelay = 100,
-    settleTimeoutMs = 500,
-    actionLabel = 'trigger',
-    loadingOverlay,
-    readyTimeoutMs = 4000
-}) {
+                                            trigger,
+                                            target,
+                                            page,
+                                            maxAttempts = 3,
+                                            clickDelay = 100,
+                                            settleTimeoutMs = 500,
+                                            actionLabel = 'trigger',
+                                            loadingOverlay,
+                                            readyTimeoutMs = 4000
+                                        }) {
     return clickUntil({
         trigger,
         page,
@@ -144,6 +153,7 @@ export async function clickUntilEnabled({
         }
     });
 }
+
 
 export async function findFirstVisible(locator) {
     const count = await locator.count();

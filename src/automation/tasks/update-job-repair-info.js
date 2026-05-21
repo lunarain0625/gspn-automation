@@ -38,7 +38,7 @@ export async function updateJobRepairInfo(businessPage, data) {
         name: 'Warranty Check',
     }).click();
     //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
-    await businessPage.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
+    await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
     });
 
     const checkResult = await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
@@ -109,7 +109,7 @@ export async function updateJobRepairInfo(businessPage, data) {
     console.log('✅ Inspection update success confirmed');
 
 
-    await businessPage.pause();
+    // await businessPage.pause();
     return {
         success: true,
     };
