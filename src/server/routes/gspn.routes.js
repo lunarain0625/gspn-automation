@@ -1,7 +1,7 @@
 import express from 'express';
 import {
     searchPartController,
-    createJobController, updateJobController
+    createJobController, updateJobController, completeJobController, deliverGoodController
 } from '../controllers/gspn.controller.js';
 import { requireApiKey } from '../middleware/auth.middleware.js';
 
