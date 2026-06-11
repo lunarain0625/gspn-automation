@@ -100,6 +100,9 @@ async function fillCustomerPopup(page2, data) {
         exact: true
     }).locator('#DISTRICT').fill(data.customerSuburb || '');
 
+    if (!data.customerState && !data.customerPostCode) {
+        return;
+    }
     await selectVisibleOptionById(page2, 'REGION_CODE', data.customerState || '', 'REGION_CODE select');
     await fillVisibleInputById(page2, 'POST_CODE', data.customerPostCode || '', 'POST_CODE input');
 }
