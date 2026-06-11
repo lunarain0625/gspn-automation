@@ -3,7 +3,6 @@ import fs from 'fs';
 import {searchPart} from './tasks/search-part.js';
 import {createJob} from './tasks/create-job.js';
 import {findJob} from './tasks/find-job.js';
-import {closeJob} from './tasks/close-job.js';
 import {updateJobRepairInfo} from './tasks/update-job-repair-info.js';
 import {completeJob} from "./tasks/complete-job.js";
 import {deliverGood} from "./tasks/deliver-good.js";
