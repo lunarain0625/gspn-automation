@@ -72,6 +72,37 @@ export async function updateJobController(req, res) {
     }
 }
 
+export async function addPartsController(req, res) {
+    try {
+        const data = req.body;
+
+        if (!data?.vendorRa) {
+            return res.status(400).json({
+                success: false,
+                message: 'vendorRa is required'
+            });
+        }
+
+        if (!data?.partNos?.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'partNos is required'
+            });
+        }
+
+        await gspnClient.init();
+        const result = await gspnClient.addParts(data);
+
+        return res.json(result);
+    } catch (error) {
+        console.error('addPartsController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 export async function completeJobController(req, res) {
     try {
         const data = req.body;
