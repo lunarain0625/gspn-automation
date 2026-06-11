@@ -7,6 +7,8 @@ import {closeJob} from './tasks/close-job.js';
 import {updateJobRepairInfo} from './tasks/update-job-repair-info.js';
 import {completeJob} from "./tasks/complete-job.js";
 import {deliverGood} from "./tasks/deliver-good.js";
+import {addParts} from "./tasks/add-parts.js";
+import {createPo} from "./tasks/create-po.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -18,8 +20,8 @@ const CONFIG = {
     loginTimeoutMs: 180000,
     defaultTimeoutMs: 30000,
     credentials: {
-        username: process.env.GSPN_USERNAME || 'harry0625',
-        password: process.env.GSPN_PASSWORD || 'mnbvcxz12!@#'
+        username: process.env.GSPN_USERNAME,
+        password: process.env.GSPN_PASSWORD
     }
 };
 
@@ -149,6 +151,24 @@ class GspnClient {
                     default:
                         throw new Error(`Unknown action: ${action}`);
                 }
+            });
+
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
+
+    async addParts(data) {
+        this.isBusy = true;
+
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+
+                // 1️⃣ 先找到 job
+                await findJob(businessPage, data);
+                await addParts(businessPage, data);
+                return await createPo(businessPage, data);
             });
 
         } finally {

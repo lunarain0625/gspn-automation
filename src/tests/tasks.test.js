@@ -19,20 +19,20 @@ export async function testCreateJob(client) {
 
     const data = {
         source: 'SOLVUP',
-        solvupId: '00000012',
-        productSerialNumber: '352520440777564',
+        solvupId: '00000013',
+        productSerialNumber: '353137850013999',
         warrantyType: 'OW',
-        customerFirstName: 'HARRY6',
-        customerLastName: 'WANG6',
-        customerEmail: 'lunarain@live.com',
+        customerFirstName: 'HARRY7',
+        customerLastName: 'WANG7',
+        customerEmail: '',
         customerPhone: '0420790625',
 
-        customerAddress: '121 street st',
-        customerSuburb: 'Donvale',
-        customerState: 'VIC',
-        customerPostCode: '3111',
+        customerAddress: '',
+        customerSuburb: '',
+        customerState: '',
+        customerPostCode: '',
 
-        purchaseDate: '01.01.2024',
+        purchaseDate: '',
     };
 
     const result = await client.createJob(data);
@@ -63,7 +63,7 @@ export async function testUpdateJob(client) {
         diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
         purchaseDate: '',
         productSerialNumber: '350956651025131',
-        faultReport:"no power no charging",
+        faultReport: "no power no charging",
     };
     const result = await client.updateJob('test', data);
 
@@ -86,6 +86,27 @@ export async function testCompleteJob(client) {
         repairCode: 'SRC038',
     };
     const result = await client.completeJob(data);
+
+    console.log('Result:', result);
+
+    if (!result?.success) {
+        throw new Error('❌ searchJobBySo failed');
+    }
+
+    console.log('✅ searchJobBySo passed\n');
+}
+
+export async function testAddParts(client) {
+
+    const data = {
+        source: 'SOLVUP',
+        solvupId: '00000003',
+        vendorRa: '4436927856',
+        warrantyType: 'OW',
+        repairCode: 'SRC038',
+        partNos: ['GH82-29456A'],
+    };
+    const result = await client.addParts(data);
 
     console.log('Result:', result);
 
