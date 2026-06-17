@@ -221,7 +221,9 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
 
     function normalizeWarrantyResult(raw) {
         const value = (raw || '').toString().trim().toUpperCase();
-        return value === 'IW' || value === 'OW' ? value : '';
+        if (value === 'LP') return 'IW'; // Legacy: LP = IW
+        if (value === 'OW') return 'OW';
+        return '';
     }
 
     async function readWarrantyResult() {

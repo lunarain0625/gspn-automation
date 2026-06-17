@@ -35,7 +35,23 @@ export async function testCreateJob(client) {
         purchaseDate: '',
     };
 
-    const result = await client.createJob(data);
+    const testData = {
+        source: 'SOLVUP',
+        solvupId: '10093714',
+        customerFirstName: 'Test',
+        purchaseDate: '12/12/2025',
+        warrantyType: 'IW',
+        customerEmail: 'Ruwan.liyanage@ticgroup.com.au',
+        productSerialNumber: '350145974237462',
+        customerPhone: '469823205',
+        customerState: 'Qld',
+        customerSuburb: 'Southport',
+        customerAddress: 'Blake street',
+        customerLastName: 'Test',
+        customerPostCode: '4215',
+    }
+
+    const result = await client.createJob(testData);
 
     console.log('Result:', result);
 
