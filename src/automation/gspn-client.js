@@ -37,6 +37,7 @@ class GspnClient {
 
     async init() {
         if (this.page && !this.page.isClosed()) {
+            console.log('🚀 Already initialized');
             return;
         }
 
@@ -114,7 +115,7 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            // await this.keepAliveOnce();
         }
     }
 

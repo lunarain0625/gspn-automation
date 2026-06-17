@@ -6,6 +6,48 @@ import {
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
 
+const STATE_MAPPING = {
+    ACT: 'Aust Capital Terr',
+    'AUSTRALIAN CAPITAL TERRITORY': 'Aust Capital Terr',
+    'AUST CAPITAL TERR': 'Aust Capital Terr',
+
+    NSW: 'New South Wales',
+    'NEW SOUTH WALES': 'New South Wales',
+
+    NT: 'Northern Territory',
+    'NORTHERN TERRITORY': 'Northern Territory',
+
+    QLD: 'Queensland',
+    QUEENSLAND: 'Queensland',
+
+    SA: 'South Australia',
+    'SOUTH AUSTRALIA': 'South Australia',
+
+    TAS: 'Tasmania',
+    TASMANIA: 'Tasmania',
+
+    VIC: 'Victoria',
+    VICTORIA: 'Victoria',
+
+    WA: 'Western Australia',
+    'WESTERN AUSTRALIA': 'Western Australia',
+
+    NZ: 'NEW ZEALAND',
+    'NEW ZEALAND': 'NEW ZEALAND'
+};
+
+function normalizeState(state) {
+    if (!state) {
+        return '';
+    }
+
+    const normalized = state
+        .toString()
+        .trim()
+        .toUpperCase();
+
+    return STATE_MAPPING[normalized] || state;
+}
 
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
@@ -103,7 +145,12 @@ async function fillCustomerPopup(page2, data) {
     if (!data.customerState && !data.customerPostCode) {
         return;
     }
-    await selectVisibleOptionById(page2, 'REGION_CODE', data.customerState || '', 'REGION_CODE select');
+    await selectVisibleOptionById(
+        page2,
+        'REGION_CODE',
+        normalizeState(data.customerState),
+        'REGION_CODE select'
+    );
     await fillVisibleInputById(page2, 'POST_CODE', data.customerPostCode || '', 'POST_CODE input');
 }
 
