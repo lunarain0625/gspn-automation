@@ -191,3 +191,30 @@ export async function selectVisibleOptionById(page, id, value, elementLabel = id
     await element.selectOption(value);
     return element;
 }
+
+export async function handleConfirmNotice(page) {
+
+    const rightFrame = page
+        .locator('iframe[name="rightContents"]')
+        .contentFrame();
+
+    const confirmNotice = rightFrame.locator('#divConfirmNotice');
+
+    if (!(await confirmNotice.isVisible().catch(() => false))) {
+        return false;
+    }
+
+    const message = await confirmNotice
+        .locator('#tbodyConfirmNotice')
+        .innerText()
+        .catch(() => '');
+
+    console.log('⚠️ Confirm Notice:', message);
+
+    await confirmNotice
+        .getByRole('link', {name: 'Save'})
+        .click();
+
+    console.log('✅ Confirm Notice Save clicked');
+    return true;
+}

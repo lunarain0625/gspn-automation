@@ -1,4 +1,4 @@
-import {clickUntil} from "../utils/ui-helper.js";
+import {clickUntil, handleConfirmNotice} from "../utils/ui-helper.js";
 import {formatGspnDate} from "../utils/gspn-helper.js";
 
 const REPAIR_CODE_CONFIG = {
@@ -15,6 +15,7 @@ const REPAIR_CODE_CONFIG = {
         IRIS_REPAIR: 'A'
     },
 };
+
 
 export async function updateJobRepairInfo(businessPage, data) {
     console.log('🔧 Updating job:', data);
@@ -109,21 +110,7 @@ export async function updateJobRepairInfo(businessPage, data) {
         readyTimeoutMs: 15000,
         isReady: async () => {
             // 先处理 Confirm Notice
-            const confirmNotice = rightFrame.locator('#divConfirmNotice');
-            if (await confirmNotice.isVisible().catch(() => false)) {
-                const message = await confirmNotice
-                    .locator('#tbodyConfirmNotice')
-                    .innerText()
-                    .catch(() => '');
-
-                console.log('⚠️ Confirm Notice:', message);
-
-                await confirmNotice
-                    .getByRole('link', { name: 'Save' })
-                    .click();
-
-                console.log('✅ Confirm Notice Save clicked');
-            }
+            await handleConfirmNotice(businessPage);
 
             // 再检查成功弹窗
             try {

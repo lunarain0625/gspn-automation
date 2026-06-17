@@ -1,3 +1,5 @@
+import {handleConfirmNotice} from "../utils/ui-helper.js";
+
 export async function addParts(businessPage, data) {
 
     const rightFrame = businessPage
@@ -23,6 +25,10 @@ export async function addParts(businessPage, data) {
     });
 
     await partPage.getByRole('link', {name: 'Send To Ticket'}).click();
+
+    // 先处理 Confirm Notice
+    await handleConfirmNotice(businessPage);
+    await rightFrame.locator('#progressloading').waitFor({state: 'hidden'});
 
     return {
         success: true,

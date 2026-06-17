@@ -9,9 +9,9 @@ async function run() {
         // await testSearchPart(gspnClient);
 
         // await testCreateJob(gspnClient);
-        await testUpdateJob(gspnClient);
+        // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
-        // await testAddParts(gspnClient);
+        await testAddParts(gspnClient);
         console.log('\n✅ All tests done');
     } catch (err) {
         console.error('❌ Test failed:', err);

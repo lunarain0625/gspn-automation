@@ -6,8 +6,6 @@ export async function createPo(businessPage, data) {
         .locator('iframe[name="rightContents"]')
         .contentFrame();
 
-    // 1️⃣ 确保在正确页面（非常关键）
-    await rightFrame.locator('#progressloading').waitFor({state: 'hidden'});
     const createPoButton = rightFrame.getByRole('link', {name: 'Create Po'});
 
     let poPage = null;
