@@ -29,6 +29,12 @@ export async function updateJobRepairInfo(businessPage, data) {
     //warranty check
     await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
     await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(data.purchaseDate));
+    await rightFrame.getByRole('button', {
+        name: 'Warranty Check',
+    }).click();
+    //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
+    await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
+    });
     if (data.warrantyType === 'OW') {
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
     }
