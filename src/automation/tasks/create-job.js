@@ -281,6 +281,13 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
         throw new Error('Warranty check result not found');
     }
 
+    if (data.warrantyType === 'IW') {
+        const currentException = await rightContentsFrame.locator('#WTY_EXCEPTION').inputValue().catch(() => '');
+        if (currentException === 'VOID4') {
+            throw new Error('❌ Overseas model cannot be processed as IW');
+        }
+    }
+
     return checkResult;
 }
 

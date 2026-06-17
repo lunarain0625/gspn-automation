@@ -81,7 +81,25 @@ export async function testUpdateJob(client) {
         productSerialNumber: '350956651025131',
         faultReport: "no power no charging",
     };
-    const result = await client.updateJob('test', data);
+
+    const testData = {
+        source: 'SOLVUP',
+        solvupId: '10093714',
+        vendorRa: '4437303234',
+        irisSympt: '160',
+        repairCode: 'SRC500',
+        faultReport: '1.2345678909876543e+25',
+        symptomCat1: 'L7',
+        symptomCat2: '10',
+        symptomCat3: '01',
+        symptomName: 'BROKEN SCREEN',
+        purchaseDate: '01/06/2026',
+        warrantyType: 'IW',
+        diagnosisNote: 'REPLACE REWORK KIT',
+        irisSymptQcode: 'SRC509',
+        productSerialNumber: '350145974237462',
+    }
+    const result = await client.updateJob('repair_info', testData);
 
     console.log('Result:', result);
 

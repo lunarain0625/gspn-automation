@@ -32,6 +32,10 @@ export async function updateJobRepairInfo(businessPage, data) {
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
     }
     if (data.warrantyType === 'IW') {
+        const currentException = await rightFrame.locator('#WTY_EXCEPTION').inputValue().catch(() => '');
+        if (currentException === 'VOID4') {
+            throw new Error('❌ Overseas model cannot be processed as IW');
+        }
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('');
     }
     await rightFrame.getByRole('button', {

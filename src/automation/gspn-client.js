@@ -146,8 +146,6 @@ class GspnClient {
                 switch (action) {
                     case 'repair_info':
                         return await updateJobRepairInfo(businessPage, data);
-                    case 'test':
-                        return await updateJobRepairInfo(businessPage, data);
                     default:
                         throw new Error(`Unknown action: ${action}`);
                 }
