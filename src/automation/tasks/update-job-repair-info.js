@@ -108,6 +108,24 @@ export async function updateJobRepairInfo(businessPage, data) {
         actionLabel: 'Inspection Save',
         readyTimeoutMs: 15000,
         isReady: async () => {
+            // 先处理 Confirm Notice
+            const confirmNotice = rightFrame.locator('#divConfirmNotice');
+            if (await confirmNotice.isVisible().catch(() => false)) {
+                const message = await confirmNotice
+                    .locator('#tbodyConfirmNotice')
+                    .innerText()
+                    .catch(() => '');
+
+                console.log('⚠️ Confirm Notice:', message);
+
+                await confirmNotice
+                    .getByRole('link', { name: 'Save' })
+                    .click();
+
+                console.log('✅ Confirm Notice Save clicked');
+            }
+
+            // 再检查成功弹窗
             try {
                 const dialog = await successDialogPromise;
                 return dialog.message().includes('[GCIC] Success update.');
@@ -116,9 +134,7 @@ export async function updateJobRepairInfo(businessPage, data) {
             }
         }
     });
-
     console.log('✅ Inspection update success confirmed');
-
 
     // await businessPage.pause();
     return {

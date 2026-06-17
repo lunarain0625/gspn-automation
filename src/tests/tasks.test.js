@@ -94,7 +94,7 @@ export async function testUpdateJob(client) {
         symptomCat3: '01',
         symptomName: 'BROKEN SCREEN',
         purchaseDate: '01/06/2026',
-        warrantyType: 'IW',
+        warrantyType: 'OW',
         diagnosisNote: 'REPLACE REWORK KIT',
         irisSymptQcode: 'SRC509',
         productSerialNumber: '350145974237462',
