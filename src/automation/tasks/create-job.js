@@ -5,69 +5,7 @@ import {
     findFirstVisible,
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
-
-const STATE_MAPPING = {
-    ACT: 'Aust Capital Terr',
-    'AUSTRALIAN CAPITAL TERRITORY': 'Aust Capital Terr',
-    'AUST CAPITAL TERR': 'Aust Capital Terr',
-
-    NSW: 'New South Wales',
-    'NEW SOUTH WALES': 'New South Wales',
-
-    NT: 'Northern Territory',
-    'NORTHERN TERRITORY': 'Northern Territory',
-
-    QLD: 'Queensland',
-    QUEENSLAND: 'Queensland',
-
-    SA: 'South Australia',
-    'SOUTH AUSTRALIA': 'South Australia',
-
-    TAS: 'Tasmania',
-    TASMANIA: 'Tasmania',
-
-    VIC: 'Victoria',
-    VICTORIA: 'Victoria',
-
-    WA: 'Western Australia',
-    'WESTERN AUSTRALIA': 'Western Australia',
-
-    NZ: 'NEW ZEALAND',
-    'NEW ZEALAND': 'NEW ZEALAND'
-};
-
-function normalizeState(state) {
-    if (!state) {
-        return '';
-    }
-
-    const normalized = state
-        .toString()
-        .trim()
-        .toUpperCase();
-
-    return STATE_MAPPING[normalized] || state;
-}
-
-function normalizePhone(phone) {
-    if (!phone) {
-        return '';
-    }
-
-    let normalized = phone.toString().replace(/\D/g, '');
-
-    // Convert Australian mobile international format to local format.
-    if (normalized.startsWith('61')) {
-        normalized = `0${normalized.slice(2)}`;
-    }
-
-    // Ensure local mobile numbers start with 0.
-    if (normalized.length === 9 && !normalized.startsWith('0')) {
-        normalized = `0${normalized}`;
-    }
-
-    return normalized;
-}
+import {formatGspnDate, normalizePhone, normalizeState} from "../utils/gspn-helper.js";
 
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
@@ -233,8 +171,9 @@ async function saveCustomerPopup(page2) {
 
 async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
     const warrantyResultInput = rightContentsFrame.locator('#WTY_in_out');
-    console.log(`purchaseDate: ${data.purchaseDate}, warrantyType: ${data.warrantyType}`)
-    await rightContentsFrame.locator('#PURCHASE_DATE').fill(data.purchaseDate || '');
+    console.log(`purchaseDate: ${data.purchaseDate}, warrantyType: ${data.warrantyType}`);
+    const purchaseDateInput = rightContentsFrame.locator('#PURCHASE_DATE');
+    await purchaseDateInput.fill(formatGspnDate(data.purchaseDate));
     if (data.warrantyType === 'OW') {
         await rightContentsFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
     }
@@ -308,15 +247,15 @@ export async function createJob(businessPage, config, data) {
     await openCreateServiceOrderPage(businessPage);
     await fillBaseOrderInfo(rightContentsFrame, data);
 
-    const page2 = await openCustomerPopup(businessPage, rightContentsFrame);
-    await fillCustomerPopup(page2, data);
-    await saveCustomerPopup(page2);
-
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
         throw new Error('❌ Warranty check failed');
     }
+
+    const page2 = await openCustomerPopup(businessPage, rightContentsFrame);
+    await fillCustomerPopup(page2, data);
+    await saveCustomerPopup(page2);
 
     //Finally, save the service order and extract the service number from the confirmation message
     const saveLink = rightContentsFrame.getByRole('row', {

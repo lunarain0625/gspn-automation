@@ -1,4 +1,5 @@
-import {clickUntil, fillVisibleInputById} from "../utils/ui-helper.js";
+import {clickUntil} from "../utils/ui-helper.js";
+import {formatGspnDate} from "../utils/gspn-helper.js";
 
 const REPAIR_CODE_CONFIG = {
     //NDF
@@ -27,7 +28,7 @@ export async function updateJobRepairInfo(businessPage, data) {
 
     //warranty check
     await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
-    await rightFrame.locator('#PURCHASE_DATE').fill(data.purchaseDate || '');
+    await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(data.purchaseDate));
     if (data.warrantyType === 'OW') {
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
     }
