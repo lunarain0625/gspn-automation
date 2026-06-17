@@ -49,6 +49,26 @@ function normalizeState(state) {
     return STATE_MAPPING[normalized] || state;
 }
 
+function normalizePhone(phone) {
+    if (!phone) {
+        return '';
+    }
+
+    let normalized = phone.toString().replace(/\D/g, '');
+
+    // Convert Australian mobile international format to local format.
+    if (normalized.startsWith('61')) {
+        normalized = `0${normalized.slice(2)}`;
+    }
+
+    // Ensure local mobile numbers start with 0.
+    if (normalized.length === 9 && !normalized.startsWith('0')) {
+        normalized = `0${normalized}`;
+    }
+
+    return normalized;
+}
+
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
         .locator('iframe[name="leftMenus"]')
@@ -128,7 +148,7 @@ async function fillCustomerPopup(page2, data) {
     await page2.getByRole('row', {
         name: 'TEL (Mobile/Fax)',
         exact: true
-    }).locator('#MOBILE_PHONE').fill(data.customerPhone || '');
+    }).locator('#MOBILE_PHONE').fill(normalizePhone(data.customerPhone));
     await page2.getByRole('cell', {
         name: 'Check Permission',
         exact: true

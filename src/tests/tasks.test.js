@@ -39,7 +39,7 @@ export async function testCreateJob(client) {
         source: 'SOLVUP',
         solvupId: '10093714',
         customerFirstName: 'Test',
-        purchaseDate: '12/12/2025',
+        purchaseDate: '01/06/2026',
         warrantyType: 'IW',
         customerEmail: 'Ruwan.liyanage@ticgroup.com.au',
         productSerialNumber: '350145974237462',
