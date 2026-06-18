@@ -150,3 +150,15 @@ export async function testAddParts(client) {
 
     console.log('✅ searchJobBySo passed\n');
 }
+
+export async function testGetDeviceInfo(client) {
+    const sn = '356737570411071';
+    const result = await client.getDeviceInfoBySn(sn);
+    console.log('Result:', result);
+
+    if (!result?.success) {
+        throw new Error('❌ searchJobBySo failed');
+    }
+
+    console.log('✅ searchJobBySo passed\n');
+}

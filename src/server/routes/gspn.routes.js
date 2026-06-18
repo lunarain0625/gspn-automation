@@ -1,7 +1,12 @@
 import express from 'express';
 import {
     searchPartController,
-    createJobController, updateJobController, completeJobController, deliverGoodController, addPartsController
+    createJobController,
+    updateJobController,
+    completeJobController,
+    deliverGoodController,
+    addPartsController,
+    getDeviceController
 } from '../controllers/gspn.controller.js';
 import {requireApiKey} from '../middleware/auth.middleware.js';
 
@@ -13,4 +18,5 @@ router.post('/update-job', updateJobController);
 router.post('/add-parts', addPartsController);
 router.post('/complete-job', completeJobController);
 router.post('/deliver-good', deliverGoodController);
+router.get('/get-device-info',getDeviceController );
 export default router;

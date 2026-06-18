@@ -8,6 +8,7 @@ import {completeJob} from "./tasks/complete-job.js";
 import {deliverGood} from "./tasks/deliver-good.js";
 import {addParts} from "./tasks/add-parts.js";
 import {createPo} from "./tasks/create-po.js";
+import {getDeviceInfoBySn} from "./tasks/get-device-info-by-sn.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -119,6 +120,17 @@ class GspnClient {
         }
     }
 
+    async getDeviceInfoBySn(sn) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                return await getDeviceInfoBySn(this.page, this.config, sn);
+            });
+        } finally {
+            this.isBusy = false;
+            // await this.keepAliveOnce();
+        }
+    }
 
     async createJob(data) {
         this.isBusy = true;

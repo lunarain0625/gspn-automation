@@ -24,6 +24,30 @@ export async function searchPartController(req, res) {
     }
 }
 
+export async function getDeviceController(req, res) {
+    try {
+        const {sn} = req.query;
+
+        if (!sn) {
+            return res.status(400).json({
+                success: false,
+                message: 'sn is required'
+            });
+        }
+
+        await gspnClient.init();
+        const result = await gspnClient.getDeviceInfoBySn(sn);
+
+        return res.json(result);
+    } catch (error) {
+        console.error('getDeviceController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 export async function createJobController(req, res) {
     try {
         const data = req.body;
