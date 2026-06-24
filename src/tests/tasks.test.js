@@ -123,7 +123,7 @@ export async function testAddParts(client) {
         source: 'SOLVUP',
         partNos: [ 'GH82-39267A' ],
         solvupId: '10093714',
-        vendorRa: '4437697898',
+        vendorRa: '4437707465',
         repairCode: 'SRC500',
         warrantyType: 'OW'
     };

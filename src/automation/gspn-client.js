@@ -176,7 +176,10 @@ class GspnClient {
         try {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
-                await addParts(businessPage, data);
+                const addPartResult = await addParts(businessPage, data);
+                if (addPartResult.message === 'No parts to add') {
+                    return addPartResult;
+                }
                 const po = await createPo(businessPage, data);
                 await findJob(businessPage, data);
                 await updateJobStatus(businessPage, 'ST030', 'HP045');

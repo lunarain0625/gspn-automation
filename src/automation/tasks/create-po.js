@@ -50,7 +50,6 @@ export async function createPo(businessPage, data) {
             if (verifyMessage === 'Successed.') {
                 break;
             } else if (verifyMessage.includes('Purchase order number in document number')) {
-                //todo change po number and retry
                 await poPage.locator('input[name="poNo"]').fill(`${data.vendorRa}${data.warrantyType}${attempt}`);
             } else {
                 return {
