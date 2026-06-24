@@ -95,7 +95,8 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
     await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCat3);
     //click unit receive time icon
-    await rightFrame.locator('#ICO_UNIT_RECV_TIME').click();
+    await rightFrame.locator('#ICO_UNIT_RECV_TIME').click().catch(() => {
+    });
 
     const successDialogPromise = businessPage.waitForEvent('dialog', {
         timeout: 15000,
