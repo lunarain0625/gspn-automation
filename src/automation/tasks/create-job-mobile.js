@@ -31,62 +31,26 @@ async function openCreateServiceOrderPage(businessPage) {
 
 //todo: change prefix to SOLVUP for solvup data
 async function fillBaseOrderInfo(rightContentsFrame, data) {
-    //切换到all products
-    await rightContentsFrame.locator('#rdoDisplayNonHHP').click()
-
     const ascJobNo = data.ascJobNo || (
         data.source === 'SOLVUP'
             ? `TESTS${data.solvupId}`
             : `TESTW${String(data.productSerialNumber || '').slice(-8)}`
     );
 
-    await rightContentsFrame
-        .locator('#moretailid1')
-        .locator('input[name="ASC_JOB_NO"]').fill(ascJobNo);
+    await rightContentsFrame.locator('#ASC_JOB_NO').fill(ascJobNo);
 
-    // const imeiInput = rightContentsFrame
-    //     .getByRole('cell', {name: 'Service Tracking > Create New Service Order CREATE NEW SERVICE ORDER     Save'})
-    //     .locator('#IMEI');
-
-
-    //fill imei input
-    const serialInput = rightContentsFrame
-        .locator('#moretailid3')
-        .locator('input[name="SERIAL_NO"]');
     const imeiInput = rightContentsFrame
-        .locator('#moretailid3')
-        .locator('input[name="IMEI"]');
-    await serialInput.fill(data.productSerialNumber || '');
-    await serialInput.press('Enter');
+        .getByRole('cell', {name: 'Service Tracking > Create New Service Order CREATE NEW SERVICE ORDER     Save'})
+        .locator('#IMEI');
+
     await imeiInput.fill(data.productSerialNumber || '');
     await imeiInput.press('Enter');
-    //select service type
-    await rightContentsFrame
-        .locator('select[name="SERVICE_TYPE"]')
-        .selectOption(data.source === 'SOLVUP' ? 'PS' : 'CI');
 
-    //select collection point if solvup
-    if (data.source === 'SOLVUP') {
-        await rightContentsFrame.locator('#CC_CODE').selectOption('8282068226');
-    }
-
-    //select symptom category
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption('L2');
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption('02');
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption('02');
-
-    //fill customer info
     await rightContentsFrame.getByRole('textbox', {name: 'FIRST'}).fill(data.customerFirstName || '');
     await rightContentsFrame.getByRole('textbox', {name: 'LAST'}).fill(data.customerLastName || '');
-
-    //click appointment time icon
-    await rightContentsFrame.locator(
-        'img[onclick*="setCurrentDateTime_AppDt"]'
-    ).click();
-    //click customer's request
-    await rightContentsFrame.locator('#tdCustomerRequestDate > table > tbody > tr > td:nth-child(2) > div > img').click();
-    //click unit received date
-    await rightContentsFrame.locator('#UnitReceivedField > table > tbody > tr > td:nth-child(2) > div > img').click();
 }
 
 async function openCustomerPopup(businessPage, rightContentsFrame) {
@@ -280,8 +244,10 @@ export async function createJob(businessPage, config, data) {
         dialog.dismiss().catch(() => {
         });
     });
+
     await openCreateServiceOrderPage(businessPage);
     await fillBaseOrderInfo(rightContentsFrame, data);
+
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
@@ -292,34 +258,40 @@ export async function createJob(businessPage, config, data) {
     await fillCustomerPopup(page2, data);
     await saveCustomerPopup(page2);
 
-    // await businessPage.pause();
-
     //Finally, save the service order and extract the service number from the confirmation message
     const saveLink = rightContentsFrame.getByRole('row', {
         name: 'CREATE NEW SERVICE ORDER     Save',
         exact: true
     }).getByRole('link')
+
     console.log('saveLink count: ', await saveLink.count());
-    const orderCreatedMessage = rightContentsFrame.locator('#errTable');
+    const saveButton = rightContentsFrame
+        .locator('#divButtons')
+        .getByRole('button', {name: 'Save'});
     await clickUntilVisible({
         trigger: saveLink,
         page: businessPage,
         actionLabel: 'Save New Job',
-        target: orderCreatedMessage
-    });
+        target: saveButton
+    })
 
-    const errorText = await rightContentsFrame
-        .locator('#errBody')
-        .textContent();
 
-    const serviceNo = errorText
-        ?.match(/Order\s+was\s+created\s+by\s+No\.(\d+)/i)?.[1];
+    const serviceTextLocator = rightContentsFrame.locator(
+        'span[title="Object ID // Wty Bill No // ASC Job No // Create Date"]'
+    );
+    await serviceTextLocator.waitFor();
+    const serviceText = await serviceTextLocator.textContent();
 
+    // Example:
+    // [ 4435721718 // // TESTS00000010 // 21.05.2026 15:53:49 ]
+    const serviceNo = serviceText
+        ?.replace(/\u00a0/g, ' ')
+        .match(/\[\s*(\d+)/)?.[1];
     console.log('Extracted service number:', serviceNo);
-
     if (!serviceNo) {
         throw new Error('Service number not found in confirmation message');
     }
+
     return {
         success: true,
         checkResult,

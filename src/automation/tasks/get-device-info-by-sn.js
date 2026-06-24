@@ -36,7 +36,7 @@ export async function getDeviceInfoBySn(page, config, sn) {
 
         console.log('📱 Device Model:', deviceModel?.trim());
         console.log('📦 Product Name:', productName?.trim());
-
+        // await page.pause();
         return {
             success: true,
             sn,

@@ -18,12 +18,12 @@ export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 
     const data = {
-        source: 'SOLVUP',
-        solvupId: '00000013',
-        productSerialNumber: '353137850013999',
+        source: 'MANUAL',
+        solvupId: '00000014',
+        productSerialNumber: '353809892619930',
         warrantyType: 'OW',
-        customerFirstName: 'HARRY7',
-        customerLastName: 'WANG7',
+        customerFirstName: 'HARRY8',
+        customerLastName: 'WANG8',
         customerEmail: '',
         customerPhone: '0420790625',
 
@@ -36,22 +36,9 @@ export async function testCreateJob(client) {
     };
 
     const testData = {
-        source: 'SOLVUP',
-        solvupId: '10093714',
-        customerFirstName: 'Test',
-        purchaseDate: '01/06/2026',
-        warrantyType: 'IW',
-        customerEmail: 'Ruwan.liyanage@ticgroup.com.au',
-        productSerialNumber: '350145974237462',
-        customerPhone: '469823205',
-        customerState: 'Qld',
-        customerSuburb: 'Southport',
-        customerAddress: 'Blake street',
-        customerLastName: 'Test',
-        customerPostCode: '4215',
     }
 
-    const result = await client.createJob(testData);
+    const result = await client.createJob(data);
 
     console.log('Result:', result);
 
@@ -67,9 +54,9 @@ export async function testUpdateJob(client) {
     const data = {
         source: 'SOLVUP',
         solvupId: '00000004',
-        vendorRa: '4435728249',
+        vendorRa: '4437697898',
         warrantyType: 'OW',
-        repairCode: 'SRC038',
+        repairCode: 'SRC500',
         symptomName: 'NO CHARGING',
         symptomCat1: 'L2',
         symptomCat2: '02',
@@ -77,8 +64,8 @@ export async function testUpdateJob(client) {
         irisSymptQcode: 'SRC505',
         irisSympt: '120',
         diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
-        purchaseDate: '',
-        productSerialNumber: '350956651025131',
+        purchaseDate: '03/03/2023',
+        productSerialNumber: '353137850013999',
         faultReport: "no power no charging",
     };
 
@@ -99,7 +86,7 @@ export async function testUpdateJob(client) {
         irisSymptQcode: 'SRC509',
         productSerialNumber: '350145974237462',
     }
-    const result = await client.updateJob('repair_info', testData);
+    const result = await client.updateJob('repair_info', data);
 
     console.log('Result:', result);
 
@@ -136,16 +123,16 @@ export async function testAddParts(client) {
         source: 'SOLVUP',
         partNos: [ 'GH82-39267A' ],
         solvupId: '10093714',
-        vendorRa: '4437303234',
+        vendorRa: '4437697898',
         repairCode: 'SRC500',
-        warrantyType: 'IW'
+        warrantyType: 'OW'
     };
     const result = await client.addParts(data);
 
     console.log('Result:', result);
 
     if (!result?.success) {
-        throw new Error('❌ searchJobBySo failed');
+        throw new Error('❌ testAddParts failed');
     }
 
     console.log('✅ searchJobBySo passed\n');

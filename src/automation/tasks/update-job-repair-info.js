@@ -26,13 +26,12 @@ export async function updateJobRepairInfo(businessPage, data) {
     // 1️⃣ 确保在正确页面（非常关键）
     await rightFrame.locator('#STATUS').waitFor({state: 'visible'});
 
-
     //warranty check
     await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
     await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(data.purchaseDate));
-    await rightFrame.getByRole('button', {
-        name: 'Warranty Check',
-    }).click();
+    await rightFrame.locator('#PURCHASE_DATE').press('Escape');
+    // await rightFrame.locator('#wtyCheckBtn').click();
+
     //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
     await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
     });
@@ -46,9 +45,9 @@ export async function updateJobRepairInfo(businessPage, data) {
         }
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('');
     }
-    await rightFrame.getByRole('button', {
-        name: 'Warranty Check',
-    }).click();
+
+    await rightFrame.locator('#PURCHASE_DATE').press('Escape');
+    await rightFrame.locator('#wtyCheckBtn').click();
     //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
     await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
     });
@@ -70,11 +69,17 @@ export async function updateJobRepairInfo(businessPage, data) {
 
     //select engineer
     await rightFrame.locator('#ENGINEER').click();
-    await rightFrame.locator('#sENGINEER').selectOption('8286037301');
+    //选小强
+    await rightFrame.locator('#sENGINEER').selectOption('8286036813');
 
     //change status to ST030
+    await rightFrame.locator('#STATUS').selectOption('ST025');
     await rightFrame.locator('#STATUS').selectOption('ST030');
     await rightFrame.locator('select[name="REASON"]').selectOption('HP005');
+
+    // await rightFrame.locator('#STATUS').selectOption('ST025');
+    // await rightFrame.locator('select[name="REASON"]').selectOption('HE005');
+    // await rightFrame.locator('#SERVICE_IMG').click();
 
     //fill description
     await rightFrame.locator('#DEFECTDESC_L').fill(data.faultReport);
@@ -89,6 +94,9 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCat1);
     await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
     await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCat3);
+    //click unit receive time icon
+    await rightFrame.locator('#ICO_UNIT_RECV_TIME').click();
+
     const successDialogPromise = businessPage.waitForEvent('dialog', {
         timeout: 15000,
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')

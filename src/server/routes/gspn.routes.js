@@ -18,5 +18,5 @@ router.post('/update-job', updateJobController);
 router.post('/add-parts', addPartsController);
 router.post('/complete-job', completeJobController);
 router.post('/deliver-good', deliverGoodController);
-router.get('/get-device-info',getDeviceController );
+router.get('/get-device-info', getDeviceController);
 export default router;

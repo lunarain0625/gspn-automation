@@ -9,6 +9,7 @@ import {deliverGood} from "./tasks/deliver-good.js";
 import {addParts} from "./tasks/add-parts.js";
 import {createPo} from "./tasks/create-po.js";
 import {getDeviceInfoBySn} from "./tasks/get-device-info-by-sn.js";
+import {updateJobStatus} from "./tasks/update-job-status.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -174,11 +175,12 @@ class GspnClient {
 
         try {
             return await this.withBusinessPage(async (businessPage) => {
-
-                // 1️⃣ 先找到 job
                 await findJob(businessPage, data);
                 await addParts(businessPage, data);
-                return await createPo(businessPage, data);
+                const po = await createPo(businessPage, data);
+                await findJob(businessPage, data);
+                await updateJobStatus(businessPage, 'ST030', 'HP045');
+                return po;
             });
 
         } finally {
