@@ -1,39 +1,8 @@
-export async function clickUntilEditable({
-                                             trigger,          // 要点击的元素
-                                             targetInput,      // 用来判断是否成功的 input
-                                             page,
-                                             maxAttempts = 3
-                                         }) {
-    await trigger.waitFor({state: 'visible'});
-    await trigger.scrollIntoViewIfNeeded();
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`🔁 click attempt ${attempt}`);
-
-        await trigger.click({delay: 100});
-        await page.waitForLoadState('networkidle').catch(() => {
-        });
-        await page.waitForTimeout(500);
-
-        const isEditable = await targetInput.evaluate((el) => {
-            const input = /** @type {HTMLInputElement} */ (el);
-            return !input.disabled && !input.readOnly;
-        }).catch(() => false);
-
-        if (isEditable) {
-            console.log('✅ click effective');
-            return;
-        }
-    }
-
-    throw new Error('❌ Click did not activate target input');
-}
-
 export async function clickUntil({
                                      trigger,
                                      page,
                                      isReady,
-                                     maxAttempts = 10,
+                                     maxAttempts = 5,
                                      clickDelay = 100,
                                      settleTimeoutMs = 3000,
                                      actionLabel = 'trigger',
@@ -101,11 +70,42 @@ export async function clickUntil({
     throw new Error(`❌ Clicking ${actionLabel} did not reach expected state`);
 }
 
+export async function clickUntilEditable({
+                                             trigger,          // 要点击的元素
+                                             targetInput,      // 用来判断是否成功的 input
+                                             page,
+                                             maxAttempts = 3
+                                         }) {
+    await trigger.waitFor({state: 'visible'});
+    await trigger.scrollIntoViewIfNeeded();
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`🔁 click attempt ${attempt}`);
+
+        await trigger.click({delay: 100});
+        await page.waitForLoadState('networkidle').catch(() => {
+        });
+        await page.waitForTimeout(500);
+
+        const isEditable = await targetInput.evaluate((el) => {
+            const input = /** @type {HTMLInputElement} */ (el);
+            return !input.disabled && !input.readOnly;
+        }).catch(() => false);
+
+        if (isEditable) {
+            console.log('✅ click effective');
+            return;
+        }
+    }
+
+    throw new Error('❌ Click did not activate target input');
+}
+
 export async function clickUntilVisible({
                                             trigger,
                                             target,
                                             page,
-                                            maxAttempts = 10,
+                                            maxAttempts = 5,
                                             clickDelay = 100,
                                             settleTimeoutMs = 3000,
                                             actionLabel = 'trigger',
@@ -153,7 +153,6 @@ export async function clickUntilEnabled({
         }
     });
 }
-
 
 export async function findFirstVisible(locator) {
     const count = await locator.count();

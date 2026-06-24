@@ -29,14 +29,41 @@ export async function createPo(businessPage, data) {
     await poPage.locator('input[name="poNo"]').fill(`${data.vendorRa}${data.warrantyType}`);
     const verifyButton = poPage.getByRole('link', {name: 'Verify'})
     const saveButton = poPage.getByRole('link', {name: 'Save'})
-    await clickUntilVisible(
-        {
-            trigger: verifyButton,
-            page: businessPage,
-            actionLabel: 'Create PO',
-            target: saveButton
+    // await clickUntilVisible(
+    //     {
+    //         trigger: verifyButton,
+    //         page: businessPage,
+    //         actionLabel: 'Create PO',
+    //         target: saveButton
+    //     }
+    // )
+
+    for (let attempt = 1; attempt <= 5; attempt++) {
+        try {
+            const verifyDialogPromise = poPage.waitForEvent('dialog');
+            await verifyButton.click();
+            const verifyDialog = await verifyDialogPromise;
+            const verifyMessage = verifyDialog.message();
+            console.log('Verify Dialog:', verifyMessage);
+            await verifyDialog.accept();
+
+            if (verifyMessage === 'Successed.') {
+                break;
+            } else if (verifyMessage.includes('Purchase order number in document number')) {
+                //todo change po number and retry
+                await poPage.locator('input[name="poNo"]').fill(`${data.vendorRa}${data.warrantyType}${attempt}`);
+            } else {
+                return {
+                    success: false,
+                    message: 'Failed to verify PO: ' + verifyMessage
+                };
+            }
+
+        } catch (error) {
+            console.log(`saveButton not shown, retry ${attempt}/5`);
         }
-    )
+    }
+
     const dialogPromise = poPage.waitForEvent('dialog');
     await saveButton.click();
     const dialog = await dialogPromise;
