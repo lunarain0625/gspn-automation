@@ -47,7 +47,10 @@ export async function addParts(businessPage, data) {
 
     // 先处理 Confirm Notice
     await handleConfirmNotice(businessPage);
-    await rightFrame.locator('#progressloading').waitFor({state: 'hidden'});
+    await rightFrame.locator('#progressloading').waitFor({
+        state: 'hidden',
+        timeout: 60000,
+    });
 
     return {
         success: true,

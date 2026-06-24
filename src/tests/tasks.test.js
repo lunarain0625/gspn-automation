@@ -121,11 +121,11 @@ export async function testAddParts(client) {
 
     const data = {
         source: 'SOLVUP',
-        partNos: [ 'GH82-39267A' ],
-        solvupId: '10093714',
-        vendorRa: '4437707465',
+        partNos: ['GH02-22977A'],
+        solvupId: '10084951',
+        vendorRa: '4437721941',
         repairCode: 'SRC500',
-        warrantyType: 'OW'
+        warrantyType: 'OW',
     };
     const result = await client.addParts(data);
 

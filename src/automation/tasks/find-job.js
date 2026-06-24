@@ -24,9 +24,10 @@ export async function findJob(businessPage, data) {
         .locator('[id="Service Tracking"]')
         .evaluate(el => getComputedStyle(el).display);
 
-    if (display === 'none') {
+    console.log('Service Tracking menu display style:', display);
+    if (display !== 'block') {
         await leftMenuScrollFrame
-            .getByRole('cell', { name: 'Service Tracking' })
+            .getByRole('cell', {name: 'Service Tracking'})
             .click();
     }
 
@@ -53,7 +54,7 @@ export async function findJob(businessPage, data) {
     const title = rightContentsFrame.getByText('SERVICE ORDER DETAIL INFORMATION');
     // await businessPage.pause();
     try {
-        await title.waitFor({ state: 'visible', timeout: 8000 });
+        await title.waitFor({state: 'visible', timeout: 8000});
 
         return {
             success: true,
