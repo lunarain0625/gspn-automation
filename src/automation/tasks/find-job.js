@@ -19,7 +19,17 @@ export async function findJob(businessPage, data) {
 
     const rightContentsFrame = getRightContentsFrame(businessPage);
     const leftMenuScrollFrame = getLeftMenuScrollFrame(businessPage);
-    await leftMenuScrollFrame.getByRole('cell', {name: 'Service Tracking'}).click();
+
+    const display = await leftMenuScrollFrame
+        .locator('[id="Service Tracking"]')
+        .evaluate(el => getComputedStyle(el).display);
+
+    if (display === 'none') {
+        await leftMenuScrollFrame
+            .getByRole('cell', { name: 'Service Tracking' })
+            .click();
+    }
+
     await leftMenuScrollFrame.getByRole('cell', {
         name: 'Service Order Management Light',
         exact: true
