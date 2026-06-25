@@ -29,15 +29,17 @@ async function openCreateServiceOrderPage(businessPage) {
     }).click();
 }
 
-//todo: change prefix to SOLVUP for solvup data
 async function fillBaseOrderInfo(rightContentsFrame, data) {
     //切换到all products
     await rightContentsFrame.locator('#rdoDisplayNonHHP').click()
 
+    const solvupPrefix = 'TSOLVUP';
+    const walkInPrefix = 'TWI';
+
     const ascJobNo = data.ascJobNo || (
         data.source === 'SOLVUP'
-            ? `TESTS${data.solvupId}`
-            : `TESTW${String(data.productSerialNumber || '').slice(-8)}`
+            ? `${solvupPrefix}${data.solvupId}`
+            : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
     );
 
     await rightContentsFrame
