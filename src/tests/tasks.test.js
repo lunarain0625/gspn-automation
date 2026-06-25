@@ -52,23 +52,25 @@ export async function testCreateJob(client) {
 
 export async function testUpdateJob(client) {
 
-    const data = {
-        source: 'SOLVUP',
-        solvupId: '00000004',
-        vendorRa: '4437721941',
-        warrantyType: 'OW',
-        repairCode: 'SRC500',
-        symptomName: 'NO CHARGING',
-        symptomCat1: 'L2',
-        symptomCat2: '02',
-        symptomCat3: '02',
-        irisSymptQcode: 'SRC505',
-        irisSympt: '120',
-        diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
-        purchaseDate: '03/03/2023',
-        productSerialNumber: '352520440777564',
-        faultReport: "no power no charging",
-    };
+    const data =
+        {
+            "source": "MANUAL",
+            "solvupId": "WI31013271",
+            "vendorRa": "4437780046",
+            "irisSympt": "111",
+            "repairCode": "SRC500",
+            "faultReport": "fold 5 IW",
+            "symptomCat1": "L2",
+            "symptomCat2": "01",
+            "symptomCat3": "02",
+            "symptomName": "NO POWER",
+            "purchaseDate": null,
+            "warrantyType": "IW",
+            "diagnosisNote": "no power change battery",
+            "irisSymptQcode": "SRC504",
+            "productSerialNumber": "351541631013271"
+        }
+    ;
 
     const result = await client.updateJob('repair_info', data);
 

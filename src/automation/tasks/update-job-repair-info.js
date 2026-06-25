@@ -92,8 +92,13 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('#IRIS_DEFECT').selectOption(config.IRIS_DEFECT);
     await rightFrame.locator('#IRIS_SYMPT_QCODE').selectOption(data.irisSymptQcode);
     await rightFrame.locator('#IRIS_SYMPT').selectOption(data.irisSympt);
-    await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption(data.repairCode);
-    await rightFrame.locator('#IRIS_REPAIR').selectOption(config.IRIS_REPAIR);
+
+    await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption('SRC038');
+    await rightFrame.locator('#IRIS_REPAIR').selectOption('Y');
+
+    // await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption(data.repairCode);
+    // await rightFrame.locator('#IRIS_REPAIR').selectOption(config.IRIS_REPAIR);
+
     await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCat1);
     await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
     await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCat3);

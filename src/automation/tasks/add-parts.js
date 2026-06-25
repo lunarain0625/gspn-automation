@@ -28,6 +28,9 @@ export async function addParts(businessPage, data) {
         };
     }
 
+    await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption('SRC500');
+    await rightFrame.locator('#IRIS_REPAIR').selectOption('A');
+
     const partPagePromise = businessPage.waitForEvent('popup');
     await rightFrame.getByRole('link', {name: 'Parts & Repair Tips'}).click();
     const partPage = await partPagePromise;
