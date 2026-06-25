@@ -19,7 +19,16 @@ export async function getDeviceInfoBySn(page, config, sn) {
             .locator('iframe[name="b2BLeftMenuScroll"]')
             .contentFrame();
 
-        await leftMenuFrame.getByRole('cell', {name: 'Service Tracking'}).click();
+        const display = await leftMenuFrame
+            .locator('[id="Service Tracking"]')
+            .evaluate(el => getComputedStyle(el).display);
+
+        if (display !== 'block') {
+            await leftMenuFrame
+                .getByRole('cell', {name: 'Service Tracking'})
+                .click();
+        }
+
         await leftMenuFrame.getByRole('cell', {
             name: 'Create New Service Order',
             exact: true

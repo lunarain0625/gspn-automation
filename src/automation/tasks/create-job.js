@@ -22,34 +22,29 @@ function getRightContentsFrame(businessPage) {
 async function openCreateServiceOrderPage(businessPage) {
     const leftMenuScrollFrame = getLeftMenuScrollFrame(businessPage);
 
-    await leftMenuScrollFrame.getByRole('cell', {name: 'Service Tracking'}).click();
+    const display = await leftMenuScrollFrame
+        .locator('[id="Service Tracking"]')
+        .evaluate(el => getComputedStyle(el).display);
+
+    if (display !== 'block') {
+        await leftMenuScrollFrame
+            .getByRole('cell', {name: 'Service Tracking'})
+            .click();
+    }
+
     await leftMenuScrollFrame.getByRole('cell', {
         name: 'Create New Service Order',
         exact: true
     }).click();
 }
 
-async function fillBaseOrderInfo(rightContentsFrame, data) {
+async function fillBaseOrderInfo(rightContentsFrame, data, ascJobNo) {
     //切换到all products
     await rightContentsFrame.locator('#rdoDisplayNonHHP').click()
-
-    const solvupPrefix = 'TSOLVUP';
-    const walkInPrefix = 'TWI';
-
-    const ascJobNo = data.ascJobNo || (
-        data.source === 'SOLVUP'
-            ? `${solvupPrefix}${data.solvupId}`
-            : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
-    );
 
     await rightContentsFrame
         .locator('#moretailid1')
         .locator('input[name="ASC_JOB_NO"]').fill(ascJobNo);
-
-    // const imeiInput = rightContentsFrame
-    //     .getByRole('cell', {name: 'Service Tracking > Create New Service Order CREATE NEW SERVICE ORDER     Save'})
-    //     .locator('#IMEI');
-
 
     //fill imei input
     const serialInput = rightContentsFrame
@@ -283,7 +278,17 @@ export async function createJob(businessPage, config, data) {
         });
     });
     await openCreateServiceOrderPage(businessPage);
-    await fillBaseOrderInfo(rightContentsFrame, data);
+
+    const solvupPrefix = 'TSOLVUP';
+    const walkInPrefix = 'TWI';
+
+    const ascJobNo = data.ascJobNo || (
+        data.source === 'SOLVUP'
+            ? `${solvupPrefix}${data.solvupId}`
+            : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
+    );
+
+    await fillBaseOrderInfo(rightContentsFrame, data, ascJobNo);
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
@@ -325,6 +330,7 @@ export async function createJob(businessPage, config, data) {
     return {
         success: true,
         checkResult,
+        ascJobNo,
         serviceNo
     };
 }

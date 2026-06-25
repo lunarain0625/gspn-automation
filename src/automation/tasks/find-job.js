@@ -24,7 +24,6 @@ export async function findJob(businessPage, data) {
         .locator('[id="Service Tracking"]')
         .evaluate(el => getComputedStyle(el).display);
 
-    console.log('Service Tracking menu display style:', display);
     if (display !== 'block') {
         await leftMenuScrollFrame
             .getByRole('cell', {name: 'Service Tracking'})
