@@ -46,6 +46,14 @@ export async function getDeviceInfoBySn(page, config, sn) {
         console.log('📱 Device Model:', deviceModel?.trim());
         console.log('📦 Product Name:', productName?.trim());
         // await page.pause();
+
+        if (!deviceModel) {
+            return {
+                success: false,
+                message: '❌ Failed to get device info. Please check the SN or try again.'
+            }
+        }
+
         return {
             success: true,
             sn,
@@ -53,6 +61,6 @@ export async function getDeviceInfoBySn(page, config, sn) {
             productName
         };
     } finally {
-        await page.close();
+        await newBusinessPage.close();
     }
 }

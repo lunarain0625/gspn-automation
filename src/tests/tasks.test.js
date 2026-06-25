@@ -139,7 +139,7 @@ export async function testAddParts(client) {
 }
 
 export async function testGetDeviceInfo(client) {
-    const sn = '356737570411071';
+    const sn = '123123';
     const result = await client.getDeviceInfoBySn(sn);
     console.log('Result:', result);
 
