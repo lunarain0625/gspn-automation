@@ -57,14 +57,11 @@ export async function getDeviceInfoBySn(page, sn, dop) {
             trigger: warrantyCheckButton,
             page: newBusinessPage,
             actionLabel: 'Warranty Check',
+            readyTimeoutMs: 3000,
             isReady: async () => {
                 return await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
             }
         });
-
-        await newBusinessPage.pause();
-
-
         const warrantyType = await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
         const warranty = warrantyType === 'LP';
         const productDate = await rightFrame.locator('#PRODUCT_DATE').inputValue().catch(() => '');

@@ -4,11 +4,11 @@ export async function clickUntil({
                                      isReady,
                                      maxAttempts = 5,
                                      clickDelay = 100,
-                                     settleTimeoutMs = 3000,
+                                     settleTimeoutMs = 3000, //查询ready状态前等待的时间，避免页面还没稳定就去查询ready状态
                                      actionLabel = 'trigger',
                                      loadingOverlay = page.locator('iframe[name="rightContents"]')
                                          .contentFrame().locator('#progressloading'),
-                                     readyTimeoutMs = 30000
+                                     readyTimeoutMs = 10000 //每轮点击后等待的最大时间
                                  }) {
     await trigger.waitFor({state: 'visible'});
     await trigger.scrollIntoViewIfNeeded();
