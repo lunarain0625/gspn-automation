@@ -110,7 +110,7 @@ export async function clickUntilVisible({
                                             settleTimeoutMs = 3000,
                                             actionLabel = 'trigger',
                                             loadingOverlay,
-                                            readyTimeoutMs = 30000
+                                            readyTimeoutMs
                                         }) {
     return clickUntil({
         trigger,

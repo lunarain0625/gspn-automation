@@ -17,23 +17,25 @@ export async function testSearchPart(client) {
 export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 
-    const data = {
-        source: 'MANUAL',
-        solvupId: '00000014',
-        productSerialNumber: '353809892619930',
-        warrantyType: 'OW',
-        customerFirstName: 'HARRY8',
-        customerLastName: 'WANG8',
-        customerEmail: '',
-        customerPhone: '0420790625',
+    const data =
+        {
+            "source": "MANUAL",
+            "solvupId": "WI31013271",
+            "purchaseDate": null,
+            "warrantyType": "IW",
 
-        customerAddress: '',
-        customerSuburb: '',
-        customerState: '',
-        customerPostCode: '',
+            "customerFirstName": "HANXIAO",
+            "customerLastName": "WANG",
+            "customerEmail": "lunarain@live.com",
+            "customerPhone": "0420790625",
 
-        purchaseDate: '',
-    };
+            "customerAddress": "17 Larne Avenue",
+            "customerSuburb": "Bayswater",
+            "customerState": "Victoria",
+            "customerPostCode": "3153",
+
+            "productSerialNumber": "351541631013271"
+        }
 
     const testData = {}
 
