@@ -54,7 +54,7 @@ export async function testUpdateJob(client) {
     const data = {
         source: 'SOLVUP',
         solvupId: '00000004',
-        vendorRa: '4437697898',
+        vendorRa: '4437721941',
         warrantyType: 'OW',
         repairCode: 'SRC500',
         symptomName: 'NO CHARGING',
@@ -65,27 +65,10 @@ export async function testUpdateJob(client) {
         irisSympt: '120',
         diagnosisNote: 'Device no power on. Tested with known good charger. No current draw detected.',
         purchaseDate: '03/03/2023',
-        productSerialNumber: '353137850013999',
+        productSerialNumber: '352520440777564',
         faultReport: "no power no charging",
     };
 
-    const testData = {
-        source: 'SOLVUP',
-        solvupId: '10093714',
-        vendorRa: '4437303234',
-        irisSympt: '160',
-        repairCode: 'SRC500',
-        faultReport: '1.2345678909876543e+25',
-        symptomCat1: 'L7',
-        symptomCat2: '10',
-        symptomCat3: '01',
-        symptomName: 'BROKEN SCREEN',
-        purchaseDate: '01/06/2026',
-        warrantyType: 'OW',
-        diagnosisNote: 'REPLACE REWORK KIT',
-        irisSymptQcode: 'SRC509',
-        productSerialNumber: '350145974237462',
-    }
     const result = await client.updateJob('repair_info', data);
 
     console.log('Result:', result);
@@ -139,8 +122,9 @@ export async function testAddParts(client) {
 }
 
 export async function testGetDeviceInfo(client) {
-    const sn = '123123';
-    const result = await client.getDeviceInfoBySn(sn);
+    const sn = 'RF2Y80CJM1P';
+    const dop = '03/12/2023';
+    const result = await client.getDeviceInfoBySn(sn,dop);
     console.log('Result:', result);
 
     if (!result?.success) {

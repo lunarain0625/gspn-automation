@@ -5,7 +5,7 @@ import {
     findFirstVisible,
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
-import {formatGspnDate, normalizePhone, normalizeState} from "../utils/gspn-helper.js";
+import {formatGspnDate, normalizePhone, normalizeState, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
@@ -210,13 +210,6 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
     await purchaseDateInput.fill(formatGspnDate(data.purchaseDate));
     if (data.warrantyType === 'OW') {
         await rightContentsFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
-    }
-
-    function normalizeWarrantyResult(raw) {
-        const value = (raw || '').toString().trim().toUpperCase();
-        if (value === 'LP') return 'IW'; // Legacy: LP = IW
-        if (value === 'OW') return 'OW';
-        return '';
     }
 
     async function readWarrantyResult() {

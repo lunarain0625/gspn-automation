@@ -27,7 +27,7 @@ export async function searchPartController(req, res) {
 export async function getDeviceController(req, res) {
     try {
         const {sn} = req.query;
-
+        const {dop} = req.query;
         if (!sn) {
             return res.status(400).json({
                 success: false,
@@ -36,7 +36,7 @@ export async function getDeviceController(req, res) {
         }
 
         await gspnClient.init();
-        const result = await gspnClient.getDeviceInfoBySn(sn);
+        const result = await gspnClient.getDeviceInfoBySn(sn,dop);
 
         return res.json(result);
     } catch (error) {

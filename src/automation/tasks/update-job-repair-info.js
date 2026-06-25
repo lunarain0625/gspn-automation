@@ -1,5 +1,5 @@
 import {clickUntil, handleConfirmNotice} from "../utils/ui-helper.js";
-import {formatGspnDate} from "../utils/gspn-helper.js";
+import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
 const REPAIR_CODE_CONFIG = {
     //NDF
@@ -29,12 +29,8 @@ export async function updateJobRepairInfo(businessPage, data) {
     //warranty check
     await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
     await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(data.purchaseDate));
-    await rightFrame.locator('#PURCHASE_DATE').press('Escape');
-    // await rightFrame.locator('#wtyCheckBtn').click();
+    await rightFrame.locator('#PURCHASE_DATE').press('Tab');
 
-    //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
-    await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
-    });
     if (data.warrantyType === 'OW') {
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
     }
@@ -46,15 +42,22 @@ export async function updateJobRepairInfo(businessPage, data) {
         await rightFrame.locator('#WTY_EXCEPTION').selectOption('');
     }
 
-    await rightFrame.locator('#PURCHASE_DATE').press('Escape');
-    await rightFrame.locator('#wtyCheckBtn').click();
-    //wait for warranty check to complete (legacy pages may have a loading mask that needs to disappear)
-    await rightFrame.locator('#progressloading').waitFor({state: 'hidden', timeout: 10000}).catch(() => {
+    const warrantyCheckButton = rightFrame.locator('#wtyCheckBtn');
+
+    await clickUntil({
+        trigger: warrantyCheckButton,
+        page: businessPage,
+        actionLabel: 'Warranty Check',
+        isReady: async () => {
+            return await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
+        }
     });
+
 
     const checkResult = await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
     console.log('Warranty Check Result:', checkResult);
-    if (checkResult !== data.warrantyType) {
+
+    if (normalizeWarrantyResult(checkResult) !== data.warrantyType) {
         throw new Error('❌ Warranty check failed');
     }
 

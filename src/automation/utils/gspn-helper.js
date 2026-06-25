@@ -37,6 +37,13 @@ export function formatGspnDate(date) {
     return date.toString().trim().replaceAll('/', '.');
 }
 
+export function normalizeWarrantyResult(raw) {
+    const value = (raw || '').toString().trim().toUpperCase();
+    if (value === 'LP') return 'IW'; // Legacy: LP = IW
+    if (value === 'OW') return 'OW';
+    return '';
+}
+
 export function normalizeState(state) {
     if (!state) {
         return '';
