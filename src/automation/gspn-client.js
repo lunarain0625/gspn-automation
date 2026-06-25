@@ -121,11 +121,11 @@ class GspnClient {
         }
     }
 
-    async getDeviceInfoBySn(sn, dop) {
+    async getDeviceInfoBySn(serialNumber, purchaseDate = null, checkWarranty = false) {
         this.isBusy = true;
         try {
             return await this.withBusinessPage(async (businessPage) => {
-                return await getDeviceInfoBySn(this.page, sn, dop);
+                return await getDeviceInfoBySn(this.page, serialNumber, purchaseDate, checkWarranty);
             });
         } finally {
             this.isBusy = false;

@@ -26,17 +26,16 @@ export async function searchPartController(req, res) {
 
 export async function getDeviceController(req, res) {
     try {
-        const {sn} = req.query;
-        const {dop} = req.query;
-        if (!sn) {
+        const {serialNumber, purchaseDate, checkWarranty} = req.query;
+        if (!serialNumber) {
             return res.status(400).json({
                 success: false,
-                message: 'sn is required'
+                message: 'serialNumber is required'
             });
         }
 
         await gspnClient.init();
-        const result = await gspnClient.getDeviceInfoBySn(sn,dop);
+        const result = await gspnClient.getDeviceInfoBySn(serialNumber, purchaseDate, checkWarranty);
 
         return res.json(result);
     } catch (error) {

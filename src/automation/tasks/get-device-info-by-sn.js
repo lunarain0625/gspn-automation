@@ -1,9 +1,10 @@
 import {clickUntil} from "../utils/ui-helper.js";
 import {formatGspnDate} from "../utils/gspn-helper.js";
 
-export async function getDeviceInfoBySn(page, sn, dop) {
-    console.log('🔎 Get device info by SN:', sn);
-    console.log('🔎 Get device info by DOP:', dop)
+export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkWarranty) {
+    console.log('🔎 Get device info by serialNumber:', serialNumber);
+    console.log('🔎 Get device info by purchaseDate:', purchaseDate);
+    console.log('🔎 Get device info by checkWarranty:', checkWarranty);
     // 创建一个新的独立 page
     const menuFrame = page.locator('frame[name="menu"]').contentFrame();
     const popupPromise = page.waitForEvent('popup');
@@ -40,7 +41,7 @@ export async function getDeviceInfoBySn(page, sn, dop) {
             .getByRole('cell', {name: 'Service Tracking > Create New Service Order CREATE NEW SERVICE ORDER     Save'})
             .locator('#IMEI');
 
-        await imeiInput.fill(sn || '');
+        await imeiInput.fill(serialNumber || '');
         await imeiInput.press('Enter');
         await rightFrame.locator('#progressloading').waitFor({state: 'hidden'}).catch(() => {
         });
@@ -52,23 +53,22 @@ export async function getDeviceInfoBySn(page, sn, dop) {
         if (!deviceModel) {
             return {
                 success: false,
-                message: '❌ Failed to get device info. Please check the SN or try again.'
+                message: '❌ Failed to get device info. Please check the serial number or try again.'
             }
         }
 
-        // If DOP is not provided, return the device info without performing warranty check
-        if (dop === undefined) {
+        if (!checkWarranty) {
             return {
                 success: true,
-                sn,
+                serialNumber,
                 deviceModel,
                 productName
             };
         }
 
         //Warranty Check -  Fill in the Date of Purchase (DOP) if provided
-        if (dop) {
-            await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(dop));
+        if (purchaseDate) {
+            await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(purchaseDate));
             await rightFrame.locator('#PURCHASE_DATE').press('Tab');
         }
         const warrantyCheckButton = rightFrame.getByRole('link', {name: 'Warranty Check'});
@@ -100,7 +100,7 @@ export async function getDeviceInfoBySn(page, sn, dop) {
 
         return {
             success: true,
-            sn,
+            serialNumber,
             deviceModel,
             productName,
             warranty,
