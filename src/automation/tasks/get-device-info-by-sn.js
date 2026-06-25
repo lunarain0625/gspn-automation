@@ -57,7 +57,7 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
             }
         }
 
-        if (!checkWarranty) {
+        if (checkWarranty !== 'true') {
             return {
                 success: true,
                 serialNumber,
