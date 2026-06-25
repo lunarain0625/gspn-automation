@@ -38,6 +38,15 @@ export async function completeJob(businessPage, data) {
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')
     });
 
+    businessPage.on('dialog', async dialog => {
+        console.log('📦 Dialog:', dialog.message());
+
+        try {
+            await dialog.accept();
+        } catch {
+        }
+    });
+
     await clickUntil({
         trigger: saveButton,
         page: businessPage,
@@ -45,7 +54,7 @@ export async function completeJob(businessPage, data) {
         readyTimeoutMs: 15000,
         isReady: async () => {
             // 先处理 Confirm Notice
-            // await handleConfirmNotice(businessPage);
+            await handleConfirmNotice(businessPage);
 
             // 再检查成功弹窗
             try {
