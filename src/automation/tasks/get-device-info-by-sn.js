@@ -48,6 +48,25 @@ export async function getDeviceInfoBySn(page, sn, dop) {
         const deviceModel = await rightFrame.locator('#searchFrmModel #MODEL').inputValue();
         const productName = await rightFrame.locator('#model_desc').inputValue();
 
+        // If device model is not found, return an error message
+        if (!deviceModel) {
+            return {
+                success: false,
+                message: '❌ Failed to get device info. Please check the SN or try again.'
+            }
+        }
+
+        // If DOP is not provided, return the device info without performing warranty check
+        if (dop === undefined) {
+            return {
+                success: true,
+                sn,
+                deviceModel,
+                productName
+            };
+        }
+
+        //Warranty Check -  Fill in the Date of Purchase (DOP) if provided
         if (dop) {
             await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(dop));
             await rightFrame.locator('#PURCHASE_DATE').press('Tab');
@@ -78,12 +97,6 @@ export async function getDeviceInfoBySn(page, sn, dop) {
         console.log('📱 Device Model:', deviceModel?.trim());
         console.log('📦 Product Name:', productName?.trim());
 
-        if (!deviceModel) {
-            return {
-                success: false,
-                message: '❌ Failed to get device info. Please check the SN or try again.'
-            }
-        }
 
         return {
             success: true,

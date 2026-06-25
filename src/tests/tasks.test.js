@@ -35,8 +35,7 @@ export async function testCreateJob(client) {
         purchaseDate: '',
     };
 
-    const testData = {
-    }
+    const testData = {}
 
     const result = await client.createJob(data);
 
@@ -124,7 +123,7 @@ export async function testAddParts(client) {
 export async function testGetDeviceInfo(client) {
     const sn = 'RF2Y80CJM1P';
     const dop = '03/12/2023';
-    const result = await client.getDeviceInfoBySn(sn,dop);
+    const result = await client.getDeviceInfoBySn(sn, dop);
     console.log('Result:', result);
 
     if (!result?.success) {

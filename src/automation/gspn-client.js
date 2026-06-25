@@ -121,7 +121,7 @@ class GspnClient {
         }
     }
 
-    async getDeviceInfoBySn(sn, dop = '') {
+    async getDeviceInfoBySn(sn, dop) {
         this.isBusy = true;
         try {
             return await this.withBusinessPage(async (businessPage) => {
