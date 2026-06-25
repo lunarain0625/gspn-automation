@@ -14,6 +14,8 @@ export async function updateJobStatus(businessPage, status, reason) {
     await rightFrame.locator('#STATUS').selectOption(status);
     await rightFrame.locator('select[name="REASON"]').selectOption(reason);
 
+
+    //success dialog
     const successDialogPromise = businessPage.waitForEvent('dialog', {
         timeout: 15000,
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')

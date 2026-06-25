@@ -86,11 +86,11 @@ export async function testUpdateJob(client) {
 export async function testCompleteJob(client) {
 
     const data = {
-        source: 'SOLVUP',
-        solvupId: '00000003',
-        vendorRa: '4435728249',
-        warrantyType: 'OW',
-        repairCode: 'SRC038',
+        "source": "MANUAL",
+        "solvupId": "WI31013271",
+        "vendorRa": "4437780046",
+        "repairCode": "SRC038",
+        "warrantyType": "OW"
     };
     const result = await client.completeJob(data);
 

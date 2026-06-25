@@ -17,8 +17,8 @@ async function run() {
         // await testGetDeviceInfo(gspnClient);
 
         // await testCreateJob(gspnClient);
-        await testUpdateJob(gspnClient);
-        // await testCompleteJob(gspnClient);
+        // await testUpdateJob(gspnClient);
+        await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);
         console.log('\n✅ All tests done');
     } catch (err) {

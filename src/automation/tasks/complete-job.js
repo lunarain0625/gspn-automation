@@ -22,24 +22,34 @@ export async function completeJob(businessPage, data) {
     //change status to closed
     await rightFrame.locator('#STATUS').selectOption('ST035');
     await rightFrame.locator('select[name="REASON"]').selectOption('HL005');
-    await rightFrame.locator('#SERVICE_IMG').click().catch(() => {
-    });
+
+    const serviceImg = rightFrame.locator('#SERVICE_IMG');
+    if (await serviceImg.isVisible().catch(() => false)) {
+        await serviceImg.click();
+    }
 
     const saveButton = rightFrame
         .locator('#divButtons')
         .getByRole('button', {name: 'Save'});
 
+    //success dialog
+    const successDialogPromise = businessPage.waitForEvent('dialog', {
+        timeout: 15000,
+        predicate: dialog => dialog.message().includes('[GCIC] Success update.')
+    });
+
     await clickUntil({
         trigger: saveButton,
         page: businessPage,
-        actionLabel: 'Save Repair Completed',
+        actionLabel: '[Save Repair Completed]',
         readyTimeoutMs: 15000,
         isReady: async () => {
             // 先处理 Confirm Notice
-            await handleConfirmNotice(businessPage);
+            // await handleConfirmNotice(businessPage);
 
             // 再检查成功弹窗
             try {
+
                 const dialog = await successDialogPromise;
                 console.log('dialog checked in isReady:', dialog.message());
                 return dialog.message().includes('[GCIC] Success update.');
