@@ -1,4 +1,4 @@
-import {clickUntilVisible} from "../utils/ui-helper.js";
+import {clickUntil, handleConfirmNotice} from "../utils/ui-helper.js";
 
 export async function completeJob(businessPage, data) {
     const rightFrame = businessPage
@@ -29,101 +29,29 @@ export async function completeJob(businessPage, data) {
         .locator('#divButtons')
         .getByRole('button', {name: 'Save'});
 
-    const billingButton = rightFrame
-        .locator('#divButtons')
-        .getByRole('button', {name: 'Billing'});
-    // await clickUntilLoadingCycle({
-    //     trigger: firstSaveButton,
-    //     page: businessPage,
-    //     actionLabel: 'Save Repair Completed'
-    // });
-    await clickUntilVisible(
-        {
-            trigger: saveButton,
-            page: businessPage,
-            actionLabel: 'Save Repair Completed',
-            target: billingButton
+    await clickUntil({
+        trigger: saveButton,
+        page: businessPage,
+        actionLabel: 'Save Repair Completed',
+        readyTimeoutMs: 15000,
+        isReady: async () => {
+            // 先处理 Confirm Notice
+            await handleConfirmNotice(businessPage);
+
+            // 再检查成功弹窗
+            try {
+                const dialog = await successDialogPromise;
+                console.log('dialog checked in isReady:', dialog.message());
+                return dialog.message().includes('[GCIC] Success update.');
+            } catch {
+                return false;
+            }
         }
-    )
-    console.log('✅ Repair info updated, proceeding to billing...');
-    const billingSuccess = await handleBilling(businessPage, rightFrame);
-    if (!billingSuccess) {
-        throw new Error('Billing failed');
-    }
+    });
 
     return {
         success: true,
         message: 'Job completed successfully'
     };
 
-}
-
-export async function handleBilling(businessPage, rightFrame) {
-
-    try {
-        const billingButton = rightFrame
-            .locator('#divButtons')
-            .getByRole('button', {name: 'Billing'});
-
-        let page2;
-
-        for (let i = 0; i < 5; i++) {
-
-            console.log(`🔄 Billing popup attempt ${i + 1}`);
-
-            try {
-
-                const existingPages = businessPage.context().pages().length;
-
-                await billingButton.click();
-
-                try {
-                    await businessPage.context().waitForEvent('page', {
-                        timeout: 3000
-                    });
-                } catch {
-                }
-
-                const allPages = businessPage.context().pages();
-                if (allPages.length > existingPages) {
-                    page2 = allPages[allPages.length - 1];
-                }
-
-                if (page2) {
-                    console.log(`✅ Billing popup opened on attempt ${i + 1}`);
-                    break;
-                }
-
-                console.log(`⚠️ No popup detected on attempt ${i + 1}`);
-
-            } catch (err) {
-
-                console.log(`⚠️ Billing click failed on attempt ${i + 1}: ${err.message}`);
-
-            }
-        }
-
-        if (!page2) {
-            throw new Error('Billing popup did not open');
-        }
-        page2.once('dialog', dialog => {
-            console.log(`Dialog message: ${dialog.message()}`);
-            dialog.dismiss().catch(() => {
-            });
-        });
-        await page2.getByRole('link', {name: 'Save'}).click();
-        // wait billing complete
-        const billingCancel = rightFrame
-            .locator('#divButtons')
-            .getByRole('button', {name: 'Billing Cancel'});
-        await billingCancel.waitFor({
-            state: 'visible',
-            timeout: 10000
-        });
-        console.log('✅ Billing success');
-        return true;
-    } catch (err) {
-        console.log('❌ Billing failed:', err.message);
-        return false;
-    }
 }
