@@ -38,14 +38,18 @@ async function openCreateServiceOrderPage(businessPage) {
     }).click();
 }
 
-async function fillBaseOrderInfo(rightContentsFrame, data, ascJobNo) {
+async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo) {
     //切换到all products
     await rightContentsFrame.locator('#rdoDisplayNonHHP').click()
 
     await rightContentsFrame
         .locator('#moretailid1')
         .locator('input[name="ASC_JOB_NO"]').fill(ascJobNo);
-
+    //fill a model to activate imei checker
+    const modelInput = rightContentsFrame.locator('#moretailid3')
+        .locator('#MODEL');
+    await modelInput.fill('SM-S948B');
+    await modelInput.press('Enter');
     //fill imei input
     const serialInput = rightContentsFrame
         .locator('#moretailid3')
@@ -57,21 +61,32 @@ async function fillBaseOrderInfo(rightContentsFrame, data, ascJobNo) {
     await serialInput.press('Enter');
     await imeiInput.fill(data.productSerialNumber || '');
     await imeiInput.press('Enter');
+    await rightContentsFrame.locator('#progressloading').waitFor({
+        state: 'visible'
+    }).catch(() => {
+
+    });
+    await rightContentsFrame.locator('#progressloading').waitFor({
+        state: 'hidden'
+    });
+    await businessPage.waitForTimeout(2000);
+
     //select service type
     await rightContentsFrame
-        .locator('select[name="SERVICE_TYPE"]')
+        .locator('#moretailid3').locator('select[name="SERVICE_TYPE"]')
         .selectOption(data.source === 'SOLVUP' ? 'PS' : 'CI');
 
     //select collection point if solvup
     if (data.source === 'SOLVUP') {
         await rightContentsFrame.locator('#CC_CODE').selectOption('8282068226');
     }
-
+    await businessPage.waitForTimeout(2000);
     //select symptom category
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption('L2');
+    await businessPage.waitForTimeout(2000);
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption('02');
+    await businessPage.waitForTimeout(2000);
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption('02');
-
     //fill customer info
     await rightContentsFrame.getByRole('textbox', {name: 'FIRST'}).fill(data.customerFirstName || '');
     await rightContentsFrame.getByRole('textbox', {name: 'LAST'}).fill(data.customerLastName || '');
@@ -281,7 +296,7 @@ export async function createJob(businessPage, config, data) {
             : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
     );
 
-    await fillBaseOrderInfo(rightContentsFrame, data, ascJobNo);
+    await fillBaseOrderInfo(businessPage,rightContentsFrame, data, ascJobNo);
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
@@ -291,8 +306,6 @@ export async function createJob(businessPage, config, data) {
     const page2 = await openCustomerPopup(businessPage, rightContentsFrame);
     await fillCustomerPopup(page2, data);
     await saveCustomerPopup(page2);
-
-    // await businessPage.pause();
 
     //Finally, save the service order and extract the service number from the confirmation message
     const saveLink = rightContentsFrame.getByRole('row', {
