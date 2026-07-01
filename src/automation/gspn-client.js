@@ -37,6 +37,23 @@ class GspnClient {
         this.keepAliveTimer = null;
         this.isBusy = false;
         this.isLoggedIn = false;
+        this.currentCredentials = {
+            username: this.config.credentials.username,
+            password: this.config.credentials.password
+        };
+    }
+
+    async initBrowser() {
+        if (this.browser) return;
+        this.browser = await chromium.launch({
+            headless: process.env.PLAYWRIGHT_HEADLESS !== 'false'
+        });
+    }
+
+    async createContext(storageState = undefined) {
+        this.context = await this.browser.newContext({storageState});
+        this.page = await this.context.newPage();
+        this.page.setDefaultTimeout(this.config.defaultTimeoutMs);
     }
 
     async init() {
@@ -48,16 +65,14 @@ class GspnClient {
         this.businessPage = null;
         this.page = null;
         this.context = null;
-        this.browser = null;
-        this.browser = await chromium.launch({headless: process.env.PLAYWRIGHT_HEADLESS !== 'false'});
+
+        await this.initBrowser();
 
         const storageState = fs.existsSync(this.config.storagePath)
             ? this.config.storagePath
             : undefined;
 
-        this.context = await this.browser.newContext({storageState});
-        this.page = await this.context.newPage();
-        this.page.setDefaultTimeout(this.config.defaultTimeoutMs);
+        await this.createContext(storageState);
 
         await this.ensureLoggedIn();
         this.startKeepAlive();
@@ -253,16 +268,53 @@ class GspnClient {
         return alive;
     }
 
-    async performLogin() {
+    async performLogin(username = null, password = null) {
         console.log('🔐 Need to login...');
+        const loginUsername =
+            username && username.trim()
+                ? username.trim()
+                : this.currentCredentials.username;
+
+        const loginPassword =
+            password && password.trim()
+                ? password.trim()
+                : this.currentCredentials.password;
+
+        this.currentCredentials = {
+            username: loginUsername,
+            password: loginPassword
+        };
 
         await this.page.goto(this.config.loginUrl, {
             waitUntil: 'domcontentloaded'
         });
 
-        await this.page.locator('#login_form_all input[name="LOGIN_ID"]').fill(this.config.credentials.username);
-        await this.page.locator('input[type="password"]').fill(this.config.credentials.password);
+        await this.page.locator('#login_form_all input[name="LOGIN_ID"]').fill(loginUsername);
+        await this.page.locator('input[type="password"]').fill(loginPassword);
+
+        const dialogPromise = this.page.waitForEvent('dialog').catch(() => null);
+
         await this.page.getByRole('img', {name: 'Login'}).click();
+
+        const dialog = await Promise.race([
+            dialogPromise,
+            this.page.waitForTimeout(10000).then(() => null)
+        ]);
+
+        if (dialog) {
+            const message = dialog.message();
+            await dialog.accept();
+
+            if (message.includes('GSPN ID or password is not matched')) {
+                return {
+                    success: false,
+                    message
+                };
+            }
+
+            throw new Error(`Unexpected login dialog: ${message}`);
+        }
+
         await this.page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
         await this.page.getByText('SingleID Authenticator - PIN').click();
 
@@ -274,6 +326,10 @@ class GspnClient {
         this.isLoggedIn = true;
         console.log('✅ Login success');
         await this.context.storageState({path: this.config.storagePath});
+        return {
+            success: true,
+            message: 'Login success'
+        };
     }
 
     async keepAliveOnce() {
@@ -339,6 +395,56 @@ class GspnClient {
             });
             this.browser = null;
         }
+    }
+
+    async logout() {
+        console.log('🚪 Logging out...');
+
+        this.isLoggedIn = false;
+        this.isBusy = false;
+
+        // 停止 keep alive
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+            this.keepAliveTimer = null;
+        }
+
+        // 删除持久化登录状态
+        if (fs.existsSync(this.config.storagePath)) {
+            fs.unlinkSync(this.config.storagePath);
+        }
+
+        // 关闭旧的 popup
+        if (this.businessPage && !this.businessPage.isClosed()) {
+            await this.businessPage.close().catch(() => {
+            });
+        }
+        this.businessPage = null;
+
+        // 重建 BrowserContext，彻底清除 Cookie / Storage
+        if (this.context) {
+            await this.context.close().catch(() => {
+            });
+        }
+
+        await this.initBrowser();
+
+        await this.createContext();
+
+        console.log('✅ Logout complete');
+    }
+
+    async login(username = null, password = null) {
+        await this.initBrowser();
+        await this.logout();
+        const result = await this.performLogin(username, password);
+
+        if (!result.success) {
+            return result;
+        }
+
+        this.startKeepAlive();
+        return result;
     }
 }
 

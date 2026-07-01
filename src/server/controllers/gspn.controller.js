@@ -179,6 +179,7 @@ export async function gspnStateController(req, res) {
         return res.json({
             isLoggedIn: gspnClient.isLoggedIn,
             isBusy: gspnClient.isBusy,
+            username: gspnClient.currentCredentials.username,
             success: true,
         });
     } catch (error) {
@@ -194,12 +195,25 @@ export async function gspnLoginController(req, res) {
     try {
         const {username, password} = req.body;
         console.log('gspnLoginController called with username:', username);
-        await gspnClient.init();
-        return {
-            success: true,
-        };
+        const result = await gspnClient.login(username, password)
+        return res.json(result);
     } catch (error) {
         console.error('gspnLoginController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+export async function gspnLogoutController(req, res) {
+    try {
+        await gspnClient.logout();
+        return res.json({
+            success: true,
+        });
+    } catch (error) {
+        console.error('gspnLogoutController error:', error);
         return res.status(500).json({
             success: false,
             message: error.message

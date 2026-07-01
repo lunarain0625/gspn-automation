@@ -5,19 +5,21 @@ import {
     testSearchPart,
     testCompleteJob,
     testAddParts,
-    testGetDeviceInfo
+    testGetDeviceInfo, testLogin
 } from './tasks.test.js';
 
 async function run() {
     try {
         console.log('🚀 Starting GSPN test runner...\n');
-        await gspnClient.init();
+        await testLogin(gspnClient)
+
+        // await gspnClient.init();
         // 👉 在这里控制要跑哪个测试
         // await testSearchPart(gspnClient);
         // await testGetDeviceInfo(gspnClient);
 
         // await testCreateJob(gspnClient);
-        await testUpdateJob(gspnClient);
+        // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);
         console.log('\n✅ All tests done');

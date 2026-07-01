@@ -14,6 +14,14 @@ export async function testSearchPart(client) {
     console.log('✅ searchPart passed\n');
 }
 
+export async function testLogin(client) {
+    console.log('🔑 Testing login...\n');
+
+    const result = await client.login("harry0625", "mnbvcxz12???");
+
+    console.log('Result:', result);
+}
+
 export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 
