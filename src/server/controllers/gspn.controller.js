@@ -189,3 +189,20 @@ export async function gspnStateController(req, res) {
         });
     }
 }
+
+export async function gspnLoginController(req, res) {
+    try {
+        const {username, password} = req.body;
+        console.log('gspnLoginController called with username:', username);
+        await gspnClient.init();
+        return {
+            success: true,
+        };
+    } catch (error) {
+        console.error('gspnLoginController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
