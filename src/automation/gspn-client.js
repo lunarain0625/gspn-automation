@@ -36,6 +36,7 @@ class GspnClient {
         this.businessPage = null;
         this.keepAliveTimer = null;
         this.isBusy = false;
+        this.isLoggedIn = false;
     }
 
     async init() {
@@ -65,6 +66,7 @@ class GspnClient {
     async ensureLoggedIn() {
         const alive = await this.checkSessionAlive();
         if (!alive) {
+            this.isLoggedIn = false;
             await this.performLogin();
         }
     }
@@ -269,9 +271,8 @@ class GspnClient {
         await this.page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
         });
-
+        this.isLoggedIn = true;
         console.log('✅ Login success');
-
         await this.context.storageState({path: this.config.storagePath});
     }
 
@@ -280,50 +281,30 @@ class GspnClient {
         if (this.isBusy || !this.page || this.page.isClosed()) return;
 
         try {
-
             await this.page.goto(this.config.dashboardUrl, {
-
                 waitUntil: 'domcontentloaded'
-
             });
-
             console.log('🫀 keep alive: dashboard refreshed');
 
             if (this.businessPage && !this.businessPage.isClosed()) {
-
                 try {
-
                     await this.businessPage.close();
-
                     console.log('🔄 keep alive: old business page closed');
-
                 } catch (closeError) {
-
                     console.warn('⚠️ keep alive: failed to close business page:', closeError.message);
-
                 }
-
             }
-
             this.businessPage = null;
-
             await this.ensureBusinessPage();
-
             console.log('🚀 keep alive: fresh business page opened');
-
         } catch (e) {
-
             this.businessPage = null;
-
             console.log('⚠️ keep alive failed');
-
         }
-
     }
 
     startKeepAlive() {
         if (this.keepAliveTimer) return;
-
         this.keepAliveTimer = setInterval(async () => {
             await this.keepAliveOnce();
         }, this.config.sessionCheckIntervalMs);

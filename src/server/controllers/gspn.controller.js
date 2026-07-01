@@ -173,3 +173,19 @@ export async function deliverGoodController(req, res) {
         });
     }
 }
+
+export async function gspnStateController(req, res) {
+    try {
+        return res.json({
+            isLoggedIn: gspnClient.isLoggedIn,
+            isBusy: gspnClient.isBusy,
+            success: true,
+        });
+    } catch (error) {
+        console.error('gspnStateController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}

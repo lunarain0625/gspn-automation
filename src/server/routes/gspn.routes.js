@@ -6,7 +6,7 @@ import {
     completeJobController,
     deliverGoodController,
     addPartsController,
-    getDeviceController
+    getDeviceController, gspnStateController
 } from '../controllers/gspn.controller.js';
 import {requireApiKey} from '../middleware/auth.middleware.js';
 
@@ -19,4 +19,5 @@ router.post('/add-parts', addPartsController);
 router.post('/complete-job', completeJobController);
 router.post('/deliver-good', deliverGoodController);
 router.get('/get-device-info', getDeviceController);
+router.get('/gspn-client-state', gspnStateController);
 export default router;
