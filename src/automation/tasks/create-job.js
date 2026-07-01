@@ -80,12 +80,12 @@ async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobN
     if (data.source === 'SOLVUP') {
         await rightContentsFrame.locator('#CC_CODE').selectOption('8282068226');
     }
-    await businessPage.waitForTimeout(2000);
+    await businessPage.waitForTimeout(1000);
     //select symptom category
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption('L2');
-    await businessPage.waitForTimeout(2000);
+    await businessPage.waitForTimeout(1000);
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption('02');
-    await businessPage.waitForTimeout(2000);
+    await businessPage.waitForTimeout(1000);
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption('02');
     //fill customer info
     await rightContentsFrame.getByRole('textbox', {name: 'FIRST'}).fill(data.customerFirstName || '');

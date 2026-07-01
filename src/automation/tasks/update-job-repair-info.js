@@ -1,4 +1,4 @@
-import {clickUntil, handleConfirmNotice} from "../utils/ui-helper.js";
+import {clickUntil, handleConfirmNotice, waitForLoadingOverlay} from "../utils/ui-helper.js";
 import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
 const REPAIR_CODE_CONFIG = {
@@ -27,7 +27,16 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('#STATUS').waitFor({state: 'visible'});
 
     //warranty check
-    await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
+    const display = await rightFrame
+        .locator('[id="divProduct"]')
+        .evaluate(el => getComputedStyle(el).display);
+
+    if (display !== 'block') {
+        await rightFrame.getByRole('cell', {name: 'Product Information'}).click();
+    }
+
+    const productDate = await rightFrame.locator('#PRODUCT_DATE').inputValue().catch(() => '');
+
     await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(data.purchaseDate));
     await rightFrame.locator('#PURCHASE_DATE').press('Tab');
 
@@ -44,14 +53,29 @@ export async function updateJobRepairInfo(businessPage, data) {
 
     const warrantyCheckButton = rightFrame.locator('#wtyCheckBtn');
 
-    await clickUntil({
-        trigger: warrantyCheckButton,
-        page: businessPage,
-        actionLabel: 'Warranty Check',
-        isReady: async () => {
-            return await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
+    // await clickUntil({
+    //     trigger: warrantyCheckButton,
+    //     page: businessPage,
+    //     actionLabel: 'Warranty Check',
+    //     isReady: async () => {
+    //         return await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
+    //     }
+    // });
+
+
+    for (let attempt = 1; attempt <= 5; attempt++) {
+        try {
+            console.log(`Attempting click for warranty check ${attempt}/5`);
+            await warrantyCheckButton.click();
+            await waitForLoadingOverlay(businessPage);
+
+            if (await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '')) {
+                break;
+            }
+        } catch (error) {
+            console.log(`warranty check failed, retry ${attempt}/5`);
         }
-    });
+    }
 
 
     const checkResult = await rightFrame.locator('#IN_OUT_WTY').inputValue().catch(() => '');
@@ -71,13 +95,14 @@ export async function updateJobRepairInfo(businessPage, data) {
     }
 
     //select engineer
-    await rightFrame.locator('#ENGINEER').click();
+    // await rightFrame.locator('#ENGINEER').click();
     //选小强
-    await rightFrame.locator('#sENGINEER').selectOption('8286036813');
+    // await rightFrame.locator('#sENGINEER').selectOption('8286036813');
 
     //change status to ST030
     await rightFrame.locator('#STATUS').selectOption('ST025');
     await rightFrame.locator('#STATUS').selectOption('ST030');
+    await businessPage.waitForTimeout(1000);
     await rightFrame.locator('select[name="REASON"]').selectOption('HP005');
 
     // await rightFrame.locator('#STATUS').selectOption('ST025');
@@ -102,12 +127,16 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCat1);
     await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
     await rightFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption(data.symptomCat3);
+
     //click unit receive time icon
-    await rightFrame.locator('#ICO_UNIT_RECV_TIME').click().catch(() => {
-    });
+    const receiveTimeIcon = rightFrame.locator('#ICO_UNIT_RECV_TIME');
+    if (await receiveTimeIcon.isVisible()) {
+        await receiveTimeIcon.click().catch(() => {
+        });
+    }
 
     const successDialogPromise = businessPage.waitForEvent('dialog', {
-        timeout: 15000,
+        timeout: 30000,
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')
     });
 
@@ -123,8 +152,8 @@ export async function updateJobRepairInfo(businessPage, data) {
     await clickUntil({
         trigger: rightFrame.locator('#divButtons').getByRole('button', {name: 'Save'}),
         page: businessPage,
-        actionLabel: 'Inspection Save',
-        readyTimeoutMs: 15000,
+        actionLabel: 'Update Job Save',
+        readyTimeoutMs: 10000,
         isReady: async () => {
             // 先处理 Confirm Notice
             await handleConfirmNotice(businessPage);
@@ -138,7 +167,7 @@ export async function updateJobRepairInfo(businessPage, data) {
             }
         }
     });
-    console.log('✅ Inspection update success confirmed');
+    console.log('✅ job update success confirmed');
 
     // await businessPage.pause();
     return {

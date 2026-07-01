@@ -12,6 +12,7 @@ export async function updateJobStatus(businessPage, status, reason) {
     //change status
     await rightFrame.locator('#STATUS').selectOption('ST025');
     await rightFrame.locator('#STATUS').selectOption(status);
+    await businessPage.waitForTimeout(1000);
     await rightFrame.locator('select[name="REASON"]').selectOption(reason);
 
 

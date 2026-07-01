@@ -32,7 +32,7 @@ export function formatGspnDate(date) {
     if (!date) {
         return '';
     }
-
+    console.log('Formatting date for GSPN:', date, ' => ', date.toString().trim().replaceAll('/', '.'));
     // GSPN automation browser expects dd.MM.yyyy format.
     return date.toString().trim().replaceAll('/', '.');
 }

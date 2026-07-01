@@ -52,20 +52,20 @@ export async function testUpdateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "WI31013271",
-            "vendorRa": "4437780046",
+            "solvupId": "WIX302SR0K",
+            "vendorRa": "4438048650",
             "irisSympt": "111",
             "repairCode": "SRC500",
-            "faultReport": "fold 5 IW",
+            "faultReport": "Battery Swollen",
             "symptomCat1": "L2",
             "symptomCat2": "01",
             "symptomCat3": "02",
             "symptomName": "NO POWER",
-            "purchaseDate": null,
+            "purchaseDate": "24/11/2025",
             "warrantyType": "IW",
-            "diagnosisNote": "no power change battery",
+            "diagnosisNote": "Battery swollen, no physical damage found. device cannot turn on. \nreplace battery, sub pba",
             "irisSymptQcode": "SRC504",
-            "productSerialNumber": "351541631013271"
+            "productSerialNumber": "R92X302SR0K"
         }
     ;
 
@@ -103,12 +103,12 @@ export async function testCompleteJob(client) {
 export async function testAddParts(client) {
 
     const data = {
-        source: 'SOLVUP',
-        partNos: ['GH02-22977A'],
-        solvupId: '10084951',
-        vendorRa: '4437721941',
-        repairCode: 'SRC500',
-        warrantyType: 'OW',
+        "source": "MANUAL",
+        "partNos": ["GH81-24467A", "GH81-24672A", "GH81-24537A", "GH81-24538A", "GH81-24539A", "GH81-24540A"],
+        "solvupId": "WIX302SR0K",
+        "vendorRa": "4438048650",
+        "repairCode": "SRC500",
+        "warrantyType": "IW"
     };
     const result = await client.addParts(data);
 
