@@ -298,7 +298,7 @@ class GspnClient {
 
         const dialog = await Promise.race([
             dialogPromise,
-            this.page.waitForTimeout(10000).then(() => null)
+            this.page.waitForTimeout(3000).then(() => null)
         ]);
 
         if (dialog) {
@@ -319,6 +319,14 @@ class GspnClient {
         await this.page.getByText('SingleID Authenticator - PIN').click();
 
         console.log('⏳ Waiting for MFA...');
+
+        this.page.on('dialog', async dialog => {
+            console.log('📦 Dialog:', dialog.message());
+            try {
+                await dialog.accept();
+            } catch {
+            }
+        });
 
         await this.page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
@@ -438,7 +446,7 @@ class GspnClient {
         await this.initBrowser();
         await this.logout();
         const result = await this.performLogin(username, password);
-
+        console.log('Login result:', result);
         if (!result.success) {
             return result;
         }
