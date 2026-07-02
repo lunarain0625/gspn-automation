@@ -250,11 +250,8 @@ class GspnClient {
         await this.page.goto(this.config.dashboardUrl, {
             waitUntil: 'domcontentloaded'
         });
-
         await this.page.waitForLoadState('networkidle').catch(() => {
         });
-        await this.page.waitForTimeout(1500);
-
         const loginIdInput = this.page.locator('#login_form_all input[name="LOGIN_ID"]');
         const isLoginPage = await loginIdInput.isVisible().catch(() => false);
         const currentUrl = this.page.url();

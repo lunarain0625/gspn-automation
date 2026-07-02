@@ -83,8 +83,6 @@ export async function clickUntilEditable({
         console.log(`🔁 click attempt ${attempt}`);
 
         await trigger.click({delay: 100});
-        await page.waitForLoadState('networkidle').catch(() => {
-        });
         await page.waitForTimeout(500);
 
         const isEditable = await targetInput.evaluate((el) => {
