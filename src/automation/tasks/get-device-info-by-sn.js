@@ -89,7 +89,7 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
                 return await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
             }
         });
-        await newBusinessPage.waitForTimeout(1000);
+        await newBusinessPage.waitForTimeout(3000);
         newBusinessPage.context().off('page', handler);
         if (popupPage) {
             repeatSO = (await popupPage
