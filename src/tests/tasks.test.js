@@ -28,18 +28,18 @@ export async function testCreateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "WIX302SR0K",
-            "purchaseDate": "24/11/2025",
-            "warrantyType": "IW",
-            "customerEmail": "ryan.he@okamigroup.com.au",
-            "customerPhone": "0493554598",
-            "customerState": "VIC",
-            "customerSuburb": "Oakleigh South",
-            "customerAddress": "26 Cleeland Rd",
-            "customerLastName": "He",
-            "customerPostCode": "3167",
-            "customerFirstName": "Ryan",
-            "productSerialNumber": "R92X302SR0K"
+            "solvupId": "WI51528365",
+            "purchaseDate": "12/12/2022",
+            "warrantyType": "OW",
+            "customerEmail": "harry@geekrepublic.com.au",
+            "customerPhone": "0420790625",
+            "customerState": "Victoria",
+            "customerSuburb": "Hawthorn East",
+            "customerAddress": "Unit 4, 61-63 Camberwell Rd",
+            "customerLastName": "Wang",
+            "customerPostCode": "3123",
+            "customerFirstName": "Harry",
+            "productSerialNumber": "352233851528365"
         }
 
     const testData = {}

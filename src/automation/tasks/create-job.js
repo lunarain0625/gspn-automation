@@ -116,9 +116,7 @@ async function openCustomerPopup(businessPage, rightContentsFrame) {
 
 async function activateCustomerForm(page2) {
     const newLink = page2.getByRole('link', {name: 'New'});
-    const mobilePhoneInput = page2
-        .getByRole('row', {name: 'TEL (Mobile/Fax)', exact: true})
-        .locator('#MOBILE_PHONE');
+    const mobilePhoneInput = page2.locator('#divcustomercreate').locator('#MOBILE_PHONE');
 
     await clickUntilVisible({
         trigger: newLink,
@@ -132,22 +130,10 @@ async function activateCustomerForm(page2) {
 async function fillCustomerPopup(page2, data) {
     await activateCustomerForm(page2);
 
-    await page2.getByRole('row', {
-        name: 'TEL (Mobile/Fax)',
-        exact: true
-    }).locator('#MOBILE_PHONE').fill(normalizePhone(data.customerPhone));
-    await page2.getByRole('cell', {
-        name: 'Check Permission',
-        exact: true
-    }).locator('#EMAIL').fill(data.customerEmail || '');
-    await page2.getByRole('row', {
-        name: 'Street 1,2,3',
-        exact: true
-    }).locator('#STREET1').fill(data.customerAddress || '');
-    await page2.getByRole('row', {
-        name: 'District/City',
-        exact: true
-    }).locator('#DISTRICT').fill(data.customerSuburb || '');
+    await page2.locator('#divcustomercreate').locator('#MOBILE_PHONE').fill(normalizePhone(data.customerPhone));
+    await page2.locator('#divcustomercreate').locator('#EMAIL').fill(data.customerEmail || '');
+    await page2.locator('#divcustomercreate').locator('#STREET1').fill(data.customerAddress || '');
+    await page2.locator('#divcustomercreate').locator('#DISTRICT').fill(data.customerSuburb || '');
 
     if (!data.customerState && !data.customerPostCode) {
         return;
@@ -296,7 +282,7 @@ export async function createJob(businessPage, config, data) {
             : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
     );
 
-    await fillBaseOrderInfo(businessPage,rightContentsFrame, data, ascJobNo);
+    await fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo);
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {

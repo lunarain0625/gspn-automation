@@ -11,14 +11,13 @@ import {
 async function run() {
     try {
         console.log('🚀 Starting GSPN test runner...\n');
-        await testLogin(gspnClient)
+        // await testLogin(gspnClient)
 
-        // await gspnClient.init();
-        // 👉 在这里控制要跑哪个测试
+        await gspnClient.init();
         // await testSearchPart(gspnClient);
         // await testGetDeviceInfo(gspnClient);
 
-        // await testCreateJob(gspnClient);
+        await testCreateJob(gspnClient);
         // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);
