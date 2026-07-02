@@ -19,6 +19,10 @@ export async function completeJob(businessPage, data) {
     const type = await rightFrame.locator('#SERVICE_TYPE').inputValue().catch(() => '');
     console.log('Service Type:', type);
 
+    //select engineer
+    await rightFrame.locator('#ENGINEER').click();
+    await rightFrame.locator('#sENGINEER').selectOption('8286036813');
+
     //change status to closed
     await rightFrame.locator('#STATUS').selectOption('ST035');
     await rightFrame.locator('select[name="REASON"]').selectOption('HL005');

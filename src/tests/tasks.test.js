@@ -28,18 +28,18 @@ export async function testCreateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "WI51528365",
-            "purchaseDate": "12/12/2022",
+            "solvupId": "WI02226646",
+            "purchaseDate": null,
             "warrantyType": "OW",
-            "customerEmail": "harry@geekrepublic.com.au",
+            "customerEmail": "lunarain@live.com",
             "customerPhone": "0420790625",
             "customerState": "Victoria",
-            "customerSuburb": "Hawthorn East",
-            "customerAddress": "Unit 4, 61-63 Camberwell Rd",
-            "customerLastName": "Wang",
-            "customerPostCode": "3123",
-            "customerFirstName": "Harry",
-            "productSerialNumber": "R5GL43060BA"
+            "customerSuburb": "Bayswater",
+            "customerAddress": "17 Larne Ave",
+            "customerLastName": "WANG",
+            "customerPostCode": "3153",
+            "customerFirstName": "HANXIAO",
+            "productSerialNumber": "359208700564079"
         }
 
     const testData = {}

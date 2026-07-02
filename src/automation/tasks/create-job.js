@@ -38,10 +38,21 @@ async function openCreateServiceOrderPage(businessPage) {
     }).click();
 }
 
-async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo) {
+async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo, repeat) {
     //切换到all products
-    await rightContentsFrame.locator('#rdoDisplayNonHHP').click()
 
+
+    const allProduct = rightContentsFrame.locator('#rdoDisplayNonHHP')
+    const inputDiv = rightContentsFrame.locator('#moretailid3')
+
+    await clickUntilVisible({
+        trigger: allProduct,
+        target: inputDiv,
+        page: businessPage,
+        actionLabel: 'Switch to all products',
+        settleTimeoutMs: 1000,
+        readyTimeoutMs: 5000,
+    })
     await rightContentsFrame
         .locator('#moretailid1')
         .locator('input[name="ASC_JOB_NO"]').fill(ascJobNo);
@@ -88,7 +99,9 @@ async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobN
     await businessPage.waitForTimeout(1000);
     await rightContentsFrame.locator('select[name="SYMPTOM_CAT3"]').selectOption('02');
     //fill customer info
-    await rightContentsFrame.getByRole('textbox', {name: 'FIRST'}).fill(data.customerFirstName || '');
+    await rightContentsFrame
+        .getByRole('textbox', {name: 'FIRST'})
+        .fill(`${data.customerFirstName || ''}${repeat ? Math.floor(Math.random() * 100) : ''}`);
     await rightContentsFrame.getByRole('textbox', {name: 'LAST'}).fill(data.customerLastName || '');
 
     //click appointment time icon
@@ -129,10 +142,13 @@ async function activateCustomerForm(page2) {
 
 async function fillCustomerPopup(page2, data) {
     await activateCustomerForm(page2);
-
+    await page2.waitForTimeout(1000);
     await page2.locator('#divcustomercreate').locator('#MOBILE_PHONE').fill(normalizePhone(data.customerPhone));
+    await page2.waitForTimeout(1000);
     await page2.locator('#divcustomercreate').locator('#EMAIL').fill(data.customerEmail || '');
+    await page2.waitForTimeout(1000);
     await page2.locator('#divcustomercreate').locator('#STREET1').fill(data.customerAddress || '');
+    await page2.waitForTimeout(1000);
     await page2.locator('#divcustomercreate').locator('#DISTRICT').fill(data.customerSuburb || '');
 
     if (!data.customerState && !data.customerPostCode) {
@@ -279,7 +295,7 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
     return checkResult;
 }
 
-export async function createJob(businessPage, config, data) {
+export async function createJob(businessPage, data, repeat = false) {
     console.log('🛠️ Creating Job:', data);
 
     await businessPage.waitForLoadState('domcontentloaded');
@@ -303,7 +319,7 @@ export async function createJob(businessPage, config, data) {
             : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
     );
 
-    await fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo);
+    await fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo, repeat);
     const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
@@ -321,22 +337,34 @@ export async function createJob(businessPage, config, data) {
     }).getByRole('link')
     console.log('saveLink count: ', await saveLink.count());
     const orderCreatedMessage = rightContentsFrame.locator('#errTable');
-    await clickUntilVisible({
-        trigger: saveLink,
-        page: businessPage,
-        actionLabel: 'Save New Job',
-        target: orderCreatedMessage
-    });
-
+    try {
+        await clickUntilVisible({
+            trigger: saveLink,
+            page: businessPage,
+            maxAttempts: 3,
+            settleTimeoutMs: 1000,
+            readyTimeoutMs: 3000,
+            actionLabel: 'Save New Job',
+            target: orderCreatedMessage
+        })
+    } catch (e) {
+        const tableCaptcha = rightContentsFrame.locator('#tableCaptcha');
+        if (await tableCaptcha.isVisible()) {
+            console.log('Captcha detected, retrying job creation...');
+            await createJob(businessPage, data, true);
+        } else {
+            throw e;
+        }
+    }
     const errorText = await rightContentsFrame
         .locator('#errBody')
         .textContent();
-
+    if (errorText?.includes('[G-DD008 : ASC Job No already exists.]')) {
+        throw new Error('[G-DD008 : ASC Job No already exists.]');
+    }
     const serviceNo = errorText
         ?.match(/Order\s+was\s+created\s+by\s+No\.(\d+)/i)?.[1];
-
     console.log('Extracted service number:', serviceNo);
-
     if (!serviceNo) {
         throw new Error('Service number not found in confirmation message');
     }

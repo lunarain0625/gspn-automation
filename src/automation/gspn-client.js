@@ -167,7 +167,7 @@ class GspnClient {
         this.isBusy = true;
         try {
             return await this.withBusinessPage(async (businessPage) => {
-                return await createJob(businessPage, this.config, data);
+                return await createJob(businessPage,data, false);
             });
         } finally {
             this.isBusy = false;
