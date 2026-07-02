@@ -294,26 +294,19 @@ class GspnClient {
         await this.page.locator('#login_form_all input[name="LOGIN_ID"]').fill(loginUsername);
         await this.page.locator('input[type="password"]').fill(loginPassword);
 
-        const dialogPromise = this.page.waitForEvent('dialog').catch(() => null);
-
+        const dialogPromise = this.page.waitForEvent('dialog', {timeout: 3000});
         await this.page.getByRole('img', {name: 'Login'}).click();
-
-        const dialog = await Promise.race([
-            dialogPromise,
-            this.page.waitForTimeout(3000).then(() => null)
-        ]);
+        const dialog = await dialogPromise.catch(() => null);
 
         if (dialog) {
             const message = dialog.message();
             await dialog.accept();
-
             if (message.includes('GSPN ID or password is not matched')) {
                 return {
                     success: false,
                     message
                 };
             }
-
             throw new Error(`Unexpected login dialog: ${message}`);
         }
 
@@ -321,14 +314,6 @@ class GspnClient {
         await this.page.getByText('SingleID Authenticator - PIN').click();
 
         console.log('⏳ Waiting for MFA...');
-
-        this.page.on('dialog', async dialog => {
-            console.log('📦 Dialog:', dialog.message());
-            try {
-                await dialog.accept();
-            } catch {
-            }
-        });
 
         await this.page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
