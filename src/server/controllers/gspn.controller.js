@@ -193,9 +193,9 @@ export async function gspnStateController(req, res) {
 
 export async function gspnLoginController(req, res) {
     try {
-        const {username, password} = req.body;
+        const {usePersonalAccount, username, password} = req.body;
         console.log('gspnLoginController called with username:', username);
-        const result = await gspnClient.login(username, password)
+        const result = await gspnClient.login(usePersonalAccount, username, password)
         return res.json(result);
     } catch (error) {
         console.error('gspnLoginController error:', error);

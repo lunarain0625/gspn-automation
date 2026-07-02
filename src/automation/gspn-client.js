@@ -130,7 +130,7 @@ class GspnClient {
     async searchPart(keyword) {
         this.isBusy = true;
         try {
-            return await this.withBusinessPage(async (businessPage) => {
+            return await this.withBusinessPage(async () => {
                 return await searchPart(this.context, this.config, keyword);
             });
         } finally {
@@ -142,7 +142,7 @@ class GspnClient {
     async getDeviceInfoBySn(serialNumber, purchaseDate = null, checkWarranty = false) {
         this.isBusy = true;
         try {
-            return await this.withBusinessPage(async (businessPage) => {
+            return await this.withBusinessPage(async () => {
                 return await getDeviceInfoBySn(this.page, serialNumber, purchaseDate, checkWarranty);
             });
         } finally {
@@ -270,20 +270,22 @@ class GspnClient {
 
     async performLogin(username = null, password = null) {
         console.log('🔐 Need to login...');
-        const loginUsername =
-            username && username.trim()
-                ? username.trim()
-                : this.currentCredentials.username;
+        let loginUsername;
+        let loginPassword;
 
-        const loginPassword =
-            password && password.trim()
-                ? password.trim()
-                : this.currentCredentials.password;
-
-        this.currentCredentials = {
-            username: loginUsername,
-            password: loginPassword
-        };
+        if (arguments.length === 0) {
+            // 自动续登录，使用当前账号
+            loginUsername = this.currentCredentials.username;
+            loginPassword = this.currentCredentials.password;
+        } else {
+            // 指定账号登录
+            loginUsername = username;
+            loginPassword = password;
+            this.currentCredentials = {
+                username,
+                password,
+            };
+        }
 
         await this.page.goto(this.config.loginUrl, {
             waitUntil: 'domcontentloaded'
@@ -442,10 +444,20 @@ class GspnClient {
         console.log('✅ Logout complete');
     }
 
-    async login(username = null, password = null) {
+    async login(usePersonalAccount = false, username = null, password = null) {
         await this.initBrowser();
         await this.logout();
-        const result = await this.performLogin(username, password);
+        if (!usePersonalAccount) {
+            // 默认账号
+            this.currentCredentials = {
+                username: this.config.credentials.username,
+                password: this.config.credentials.password,
+            };
+        }
+        const result = usePersonalAccount
+            ? await this.performLogin(username, password)
+            : await this.performLogin();
+
         console.log('Login result:', result);
         if (!result.success) {
             return result;
