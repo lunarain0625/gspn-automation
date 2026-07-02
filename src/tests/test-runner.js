@@ -15,9 +15,8 @@ async function run() {
 
         await gspnClient.init();
         // await testSearchPart(gspnClient);
-        // await testGetDeviceInfo(gspnClient);
-
-        await testCreateJob(gspnClient);
+        await testGetDeviceInfo(gspnClient);
+        // await testCreateJob(gspnClient);
         // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);

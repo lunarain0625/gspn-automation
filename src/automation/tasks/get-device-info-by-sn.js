@@ -65,18 +65,19 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
                 productName
             };
         }
-
         //Warranty Check -  Fill in the Date of Purchase (DOP) if provided
+        const warrantyCheckButton = rightFrame.getByRole('link', {name: 'Warranty Check'});
         if (purchaseDate) {
             await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(purchaseDate));
             await rightFrame.locator('#PURCHASE_DATE').press('Tab');
+        } else {
+            await warrantyCheckButton.click();
         }
-        const warrantyCheckButton = rightFrame.getByRole('link', {name: 'Warranty Check'});
         await clickUntil({
             trigger: warrantyCheckButton,
             page: newBusinessPage,
             actionLabel: 'Warranty Check',
-            readyTimeoutMs: 3000,
+            readyTimeoutMs: 10000,
             isReady: async () => {
                 return await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
             }
