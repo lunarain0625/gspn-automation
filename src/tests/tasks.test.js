@@ -39,7 +39,7 @@ export async function testCreateJob(client) {
             "customerLastName": "Wang",
             "customerPostCode": "3123",
             "customerFirstName": "Harry",
-            "productSerialNumber": "352233851528365"
+            "productSerialNumber": "R5GL43060BA"
         }
 
     const testData = {}
