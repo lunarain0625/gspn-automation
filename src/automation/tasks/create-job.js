@@ -231,8 +231,17 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
 
     await warrantyResultInput.waitFor({state: 'attached', timeout: 10000});
 
+    //click warranty check link and wait for result to be IW or OW
+    const warrantyCheckButton = rightContentsFrame.locator('#moretailid3').getByRole('link', {name: 'Warranty Check'});
+
+    let popupPage = null;
+    const handler = page => {
+        popupPage = page;
+    };
+    businessPage.context().on('page', handler);
+    await warrantyCheckButton.click();
     await clickUntil({
-        trigger: rightContentsFrame.getByRole('link', {name: 'Warranty Check'}),
+        trigger: warrantyCheckButton,
         page: businessPage,
         actionLabel: 'Warranty Check',
         readyTimeoutMs: 8000,
@@ -241,6 +250,18 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
             return result === 'IW' || result === 'OW';
         }
     });
+    await businessPage.waitForTimeout(3000);
+    businessPage.context().off('page', handler);
+    if (popupPage) {
+        const repeatSO = (await popupPage
+            .locator('#searchContentTableBody tr')
+            .first()
+            .locator('td')
+            .nth(1)
+            .innerText()).trim();
+        await popupPage.close();
+        throw new Error('This Product has Repair history within 1 month. Please check repair history. The repeat SO is: ' + repeatSO + '.');
+    }
 
     const checkResult = await readWarrantyResult();
 

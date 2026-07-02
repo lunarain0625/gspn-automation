@@ -1,4 +1,4 @@
-import {clickUntil} from "../utils/ui-helper.js";
+import {clickUntil, waitForLoadingOverlay} from "../utils/ui-helper.js";
 import {formatGspnDate} from "../utils/gspn-helper.js";
 
 export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkWarranty) {
@@ -65,23 +65,42 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
                 productName
             };
         }
-        //Warranty Check -  Fill in the Date of Purchase (DOP) if provided
-        const warrantyCheckButton = rightFrame.getByRole('link', {name: 'Warranty Check'});
+
         if (purchaseDate) {
             await rightFrame.locator('#PURCHASE_DATE').fill(formatGspnDate(purchaseDate));
             await rightFrame.locator('#PURCHASE_DATE').press('Tab');
-        } else {
-            await warrantyCheckButton.click();
         }
+
+        const warrantyCheckButton = rightFrame.locator('#div_table_main').getByRole('link', {name: 'Warranty Check'});
+        let popupPage = null;
+        let repeatSO = null;
+        const handler = page => {
+            popupPage = page;
+        };
+        newBusinessPage.context().on('page', handler);
+        await warrantyCheckButton.click();
         await clickUntil({
             trigger: warrantyCheckButton,
             page: newBusinessPage,
             actionLabel: 'Warranty Check',
-            readyTimeoutMs: 10000,
+            settleTimeoutMs: 1000,
+            readyTimeoutMs: 5000,
             isReady: async () => {
                 return await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
             }
         });
+        await newBusinessPage.waitForTimeout(1000);
+        newBusinessPage.context().off('page', handler);
+        if (popupPage) {
+            repeatSO = (await popupPage
+                .locator('#searchContentTableBody tr')
+                .first()
+                .locator('td')
+                .nth(1)
+                .innerText()).trim();
+            await popupPage.close();
+        }
+
         const warrantyType = await rightFrame.locator('#WTY_in_out').inputValue().catch(() => '');
         const warranty = warrantyType === 'LP';
         const productDate = await rightFrame.locator('#PRODUCT_DATE').inputValue().catch(() => '');
@@ -98,7 +117,6 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
         console.log('📱 Device Model:', deviceModel?.trim());
         console.log('📦 Product Name:', productName?.trim());
 
-
         return {
             success: true,
             serialNumber,
@@ -107,7 +125,8 @@ export async function getDeviceInfoBySn(page, serialNumber, purchaseDate, checkW
             warranty,
             productDate,
             warrantyDate,
-            overseasModel
+            overseasModel,
+            repeatSO
         };
     } finally {
         await newBusinessPage.close();

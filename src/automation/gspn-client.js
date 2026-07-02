@@ -103,7 +103,19 @@ class GspnClient {
         if (businessAlive) {
             try {
                 await this.businessPage.waitForLoadState('domcontentloaded');
-                return this.businessPage;
+                const rightFrame = this.businessPage
+                    .locator('iframe[name="rightFrame"]')
+                    .contentFrame();
+                const isSystemError = await rightFrame
+                    .locator('text=System Error')
+                    .isVisible()
+                    .catch(() => false);
+                if (isSystemError) {
+                    console.warn('⚠️ Business page is on System Error page, reopening...');
+                    this.businessPage = null;
+                } else {
+                    return this.businessPage;
+                }
             } catch (error) {
                 this.businessPage = null;
             }

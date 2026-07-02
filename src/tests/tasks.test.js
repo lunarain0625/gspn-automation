@@ -130,7 +130,7 @@ export async function testAddParts(client) {
 }
 
 export async function testGetDeviceInfo(client) {
-    const serialNumber = '350383130102672';
+    const serialNumber = 'R5GL43060BA';
     const purchaseDate = '';
     const checkWarranty = 'true';
     const result = await client.getDeviceInfoBySn(serialNumber, purchaseDate, checkWarranty);
