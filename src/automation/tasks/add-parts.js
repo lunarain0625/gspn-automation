@@ -1,4 +1,4 @@
-import {handleConfirmNotice} from "../utils/ui-helper.js";
+import {handleConfirmNotice, waitForLoadingOverlay} from "../utils/ui-helper.js";
 
 export async function addParts(businessPage, data) {
 
@@ -50,10 +50,12 @@ export async function addParts(businessPage, data) {
 
     // 先处理 Confirm Notice
     await handleConfirmNotice(businessPage);
-    await rightFrame.locator('#progressloading').waitFor({
-        state: 'hidden',
-        timeout: 60000,
-    });
+
+    await waitForLoadingOverlay(businessPage);
+    // await rightFrame.locator('#progressloading').waitFor({
+    //     state: 'hidden',
+    //     timeout: 60000,
+    // });
 
     return {
         success: true,

@@ -59,21 +59,21 @@ export async function testUpdateJob(client) {
 
     const data =
         {
-            "source": "MANUAL",
-            "solvupId": "WIX302SR0K",
-            "vendorRa": "4438048650",
-            "irisSympt": "111",
+            "source": "SOLVUP",
+            "solvupId": "12071576",
+            "vendorRa": "4438432338",
+            "irisSympt": "210",
             "repairCode": "SRC500",
-            "faultReport": "Battery Swollen",
-            "symptomCat1": "L2",
+            "faultReport": "3rd time being sent for repair, previous cases: 11957699 & 11868313\nphone automatically disconnects from wifi and also cant search for any other surrounding connection, cx has sent in video",
+            "symptomCat1": "L5",
             "symptomCat2": "01",
-            "symptomCat3": "02",
-            "symptomName": "NO POWER",
-            "purchaseDate": "24/11/2025",
+            "symptomCat3": "05",
+            "symptomName": "NO SIGNAL",
+            "purchaseDate": "10/09/2025",
             "warrantyType": "IW",
-            "diagnosisNote": "Battery swollen, no physical damage found. device cannot turn on. \nreplace battery, sub pba",
-            "irisSymptQcode": "SRC504",
-            "productSerialNumber": "R92X302SR0K"
+            "diagnosisNote": "Device returned for repair. previous repaired battery, charging port, main pba, fpcb. cx returned and reported the wifi connection issue still existed. and cx would like remedy instead.\nVOC",
+            "irisSymptQcode": "SRC515",
+            "productSerialNumber": "354043280008618"
         }
     ;
 
@@ -111,12 +111,12 @@ export async function testCompleteJob(client) {
 export async function testAddParts(client) {
 
     const data = {
-        "source": "MANUAL",
-        "partNos": ["GH81-24467A", "GH81-24672A", "GH81-24537A", "GH81-24538A", "GH81-24539A", "GH81-24540A"],
-        "solvupId": "WIX302SR0K",
-        "vendorRa": "4438048650",
+        "source": "SOLVUP",
+        "partNos": ["GH82-36327A", "GH82-36478A", "GH82-36476A"],
+        "solvupId": "12203630",
+        "vendorRa": "4438505306",
         "repairCode": "SRC500",
-        "warrantyType": "IW"
+        "warrantyType": "OW"
     };
     const result = await client.addParts(data);
 

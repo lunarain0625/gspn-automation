@@ -197,6 +197,9 @@ export async function handleConfirmNotice(page) {
 
     const confirmNotice = rightFrame.locator('#divConfirmNotice');
 
+    await confirmNotice.waitFor({state: 'visible', timeout: 3000}).catch(() => {
+    });
+
     if (!(await confirmNotice.isVisible().catch(() => false))) {
         return false;
     }
