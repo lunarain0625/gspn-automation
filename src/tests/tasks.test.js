@@ -22,6 +22,16 @@ export async function testLogin(client) {
     console.log('Result:', result);
 }
 
+export async function testGetJobStatus(client) {
+    console.log('Testing Get Job Status...')
+    const data = {
+        "vendorRa": "4438020263"
+    }
+    const result = await client.getJobStatus(data);
+    console.log('Result:', result);
+
+}
+
 export async function testCreateJob(client) {
     console.log('🛠️ Testing createJob...\n');
 

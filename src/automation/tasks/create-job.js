@@ -143,7 +143,7 @@ async function activateCustomerForm(page2) {
 async function fillCustomerPopup(page2, data) {
     await activateCustomerForm(page2);
     await page2.waitForTimeout(1000);
-    await page2.locator('#divcustomercreate').locator('#MOBILE_PHONE').fill(normalizePhone(data.customerPhone));
+    await fillVisibleInputById(page2, 'MOBILE_PHONE', normalizePhone(data.customerPhone), 'MOBILE_PHONE input');
     await page2.waitForTimeout(1000);
     await page2.locator('#divcustomercreate').locator('#EMAIL').fill(data.customerEmail || '');
     await page2.waitForTimeout(1000);

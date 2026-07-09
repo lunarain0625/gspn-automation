@@ -5,7 +5,7 @@ import {
     testSearchPart,
     testCompleteJob,
     testAddParts,
-    testGetDeviceInfo, testLogin
+    testGetDeviceInfo, testLogin, testGetJobStatus
 } from './tasks.test.js';
 
 async function run() {
@@ -17,9 +17,10 @@ async function run() {
         // await testSearchPart(gspnClient);
         // await testGetDeviceInfo(gspnClient);
         // await testCreateJob(gspnClient);
+        await testGetJobStatus(gspnClient);
         // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
-        await testAddParts(gspnClient);
+        // await testAddParts(gspnClient);
         console.log('\n✅ All tests done');
     } catch (err) {
         console.error('❌ Test failed:', err);

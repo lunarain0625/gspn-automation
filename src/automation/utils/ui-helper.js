@@ -179,8 +179,28 @@ export async function getVisibleElementById(page, id, elementLabel = id) {
 
 export async function fillVisibleInputById(page, id, value, elementLabel = id) {
     const element = await getVisibleElementById(page, id, elementLabel);
-    await element.fill(value);
-    return element;
+    const retries = 3;
+    for (let i = 0; i < retries; i++) {
+        try {
+            await element.waitFor({
+                state: 'visible',
+                timeout: 5000,
+            });
+            await element.scrollIntoViewIfNeeded();
+            await element.click({
+                timeout: 5000,
+            });
+            await element.fill(value, {
+                timeout: 5000,
+            });
+            return element;
+        } catch (e) {
+            if (i === retries - 1) {
+                throw e;
+            }
+            await element.page().waitForTimeout(500);
+        }
+    }
 }
 
 export async function selectVisibleOptionById(page, id, value, elementLabel = id) {

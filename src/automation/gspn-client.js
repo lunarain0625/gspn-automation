@@ -11,6 +11,7 @@ import {createPo} from "./tasks/create-po.js";
 import {getDeviceInfoBySn} from "./tasks/get-device-info-by-sn.js";
 import {updateJobStatus} from "./tasks/update-job-status.js";
 import {billingJob} from "./tasks/billing-job.js";
+import {getJobStatus} from "./tasks/get-job-status.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -163,11 +164,25 @@ class GspnClient {
         }
     }
 
+    async getJobStatus(data) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                await findJob(businessPage, data);
+                return await getJobStatus(businessPage);
+            });
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
+
+
     async createJob(data) {
         this.isBusy = true;
         try {
             return await this.withBusinessPage(async (businessPage) => {
-                return await createJob(businessPage,data, false);
+                return await createJob(businessPage, data, false);
             });
         } finally {
             this.isBusy = false;

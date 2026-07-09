@@ -47,6 +47,30 @@ export async function getDeviceController(req, res) {
     }
 }
 
+export async function getJobStatusController(req, res) {
+    try {
+        const data = req.body;
+
+        if (!data?.vendorRa) {
+            return res.status(400).json({
+                success: false,
+                message: 'vendorRa is required'
+            })
+        }
+        await gspnClient.init();
+        const result = await gspnClient.getJobStatus(data);
+
+        return res.json(result);
+    } catch (error) {
+        console.error('getJobStatusController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+}
+
 export async function createJobController(req, res) {
     try {
         const data = req.body;
