@@ -49,9 +49,11 @@ export async function getDeviceController(req, res) {
 
 export async function getJobStatusController(req, res) {
     try {
-        const data = req.body;
+        const {vendorRa} = req.query;
 
-        if (!data?.vendorRa) {
+        const data = {vendorRa};
+
+        if (!vendorRa) {
             return res.status(400).json({
                 success: false,
                 message: 'vendorRa is required'

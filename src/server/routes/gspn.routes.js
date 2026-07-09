@@ -19,7 +19,7 @@ router.post('/add-parts', addPartsController);
 router.post('/complete-job', completeJobController);
 router.post('/deliver-good', deliverGoodController);
 
-router.post('/get-job-status', getJobStatusController);
+router.get('/get-job-status', getJobStatusController);
 
 router.get('/get-device-info', getDeviceController);
 router.get('/gspn-client-state', gspnStateController);
