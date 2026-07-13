@@ -157,7 +157,7 @@ async function fillCustomerPopup(page2, data) {
     await selectVisibleOptionById(
         page2,
         'REGION_CODE',
-        normalizeState(data.customerState),
+        normalizeState(data.customerState || 'VIC'),
         'REGION_CODE select'
     ).catch(() => {
     });
