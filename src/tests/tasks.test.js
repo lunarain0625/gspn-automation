@@ -38,20 +38,19 @@ export async function testCreateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "WI02226646",
+            "solvupId": "WI31229927",
             "purchaseDate": null,
             "warrantyType": "OW",
-            "customerEmail": "lunarain@live.com",
-            "customerPhone": "0420790625",
-            "customerState": "Victoria",
-            "customerSuburb": "Bayswater",
-            "customerAddress": "17 Larne Ave",
-            "customerLastName": "WANG",
-            "customerPostCode": "3153",
-            "customerFirstName": "HANXIAO",
-            "productSerialNumber": "359208700564079"
+            "customerEmail": "sanjeev1732@yahoo.com",
+            "customerPhone": "0430007915",
+            "customerState": null,
+            "customerSuburb": "SPRINGVALE",
+            "customerAddress": "23/83 view road",
+            "customerLastName": "Chopra",
+            "customerPostCode": "3171",
+            "customerFirstName": "Sanjeev",
+            "productSerialNumber": "351541631229927"
         }
-
     const testData = {}
 
     const result = await client.createJob(data);

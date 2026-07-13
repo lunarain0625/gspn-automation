@@ -159,7 +159,8 @@ async function fillCustomerPopup(page2, data) {
         'REGION_CODE',
         normalizeState(data.customerState),
         'REGION_CODE select'
-    );
+    ).catch(() => {
+    });
     await fillVisibleInputById(page2, 'POST_CODE', data.customerPostCode || '', 'POST_CODE input');
 }
 

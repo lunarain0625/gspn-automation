@@ -14,10 +14,10 @@ async function run() {
         // await testLogin(gspnClient)
 
         await gspnClient.init();
-        await testSearchPart(gspnClient);
+        // await testSearchPart(gspnClient);
         // await testGetDeviceInfo(gspnClient);
-        // await testCreateJob(gspnClient);
-        await testGetJobStatus(gspnClient);
+        await testCreateJob(gspnClient);
+        // await testGetJobStatus(gspnClient);
         // await testUpdateJob(gspnClient);
         // await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);
