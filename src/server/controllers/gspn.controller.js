@@ -1,4 +1,4 @@
-import {gspnClient} from '../../automation/gspn-client.js';
+import {gspnClient, gspnQueryClient} from '../../automation/gspn-client.js';
 
 export async function searchPartController(req, res) {
     try {
@@ -10,9 +10,8 @@ export async function searchPartController(req, res) {
                 message: 'partNo is required'
             });
         }
-
-        await gspnClient.init();
-        const result = await gspnClient.searchPart(partNo);
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.searchPart(partNo);
 
         return res.json(result);
     } catch (error) {
@@ -34,8 +33,8 @@ export async function getDeviceController(req, res) {
             });
         }
 
-        await gspnClient.init();
-        const result = await gspnClient.getDeviceInfoBySn(serialNumber, purchaseDate, checkWarranty);
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.getDeviceInfoBySn(serialNumber, purchaseDate, checkWarranty);
 
         return res.json(result);
     } catch (error) {

@@ -478,4 +478,5 @@ class GspnClient {
 }
 
 export const gspnClient = new GspnClient();
+export const gspnQueryClient = new GspnClient();
 export {GspnClient};

@@ -4,7 +4,7 @@ import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 const REPAIR_CODE_CONFIG = {
     //NDF
     SRC038: {
-        LAB_TYPE: 'L1',
+        LAB_TYPE: 'FL',
         IRIS_DEFECT: '4',
         IRIS_REPAIR: 'Y',
     },
@@ -41,7 +41,11 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('#PURCHASE_DATE').press('Tab');
 
     if (data.warrantyType === 'OW') {
-        await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
+        if (data.repairCode === 'SRC038') {
+            await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID9')
+        } else {
+            await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
+        }
     }
     if (data.warrantyType === 'IW') {
         const currentException = await rightFrame.locator('#WTY_EXCEPTION').inputValue().catch(() => '');
