@@ -1,5 +1,6 @@
 import {gspnClient, gspnQueryClient} from '../../automation/gspn-client.js';
 
+//query client controller
 export async function searchPartController(req, res) {
     try {
         const {partNo} = req.body;
@@ -58,8 +59,8 @@ export async function getJobStatusController(req, res) {
                 message: 'vendorRa is required'
             })
         }
-        await gspnClient.init();
-        const result = await gspnClient.getJobStatus(data);
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.getJobStatus(data);
 
         return res.json(result);
     } catch (error) {
@@ -72,6 +73,33 @@ export async function getJobStatusController(req, res) {
     }
 }
 
+export async function getJobInfoController(req, res) {
+    try {
+        const {vendorRa} = req.query;
+
+        const data = {vendorRa};
+
+        if (!vendorRa) {
+            return res.status(400).json({
+                success: false,
+                message: 'vendorRa is required'
+            })
+        }
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.getJobInfo(data);
+        return res.json(result);
+
+    } catch (error) {
+        console.error('getJobInfoController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+}
+
+//workflow client controller
 export async function createJobController(req, res) {
     try {
         const data = req.body;
@@ -199,6 +227,7 @@ export async function deliverGoodController(req, res) {
     }
 }
 
+//workflow client auth controller
 export async function gspnStateController(req, res) {
     try {
         return res.json({

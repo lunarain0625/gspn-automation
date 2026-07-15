@@ -44,6 +44,7 @@ export async function findJob(businessPage, data) {
         trigger: searchLink,
         target: editLink,
         page: businessPage,
+        maxAttempts: 3,
         actionLabel: 'Search',
         readyTimeoutMs: 5000
     })

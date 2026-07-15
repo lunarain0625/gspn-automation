@@ -12,6 +12,7 @@ import {getDeviceInfoBySn} from "./tasks/get-device-info-by-sn.js";
 import {updateJobStatus} from "./tasks/update-job-status.js";
 import {billingJob} from "./tasks/billing-job.js";
 import {getJobStatus} from "./tasks/get-job-status.js";
+import {getJobInfo} from "./tasks/get-job-info.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -177,6 +178,19 @@ class GspnClient {
         }
     }
 
+    async getJobInfo(data) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                await findJob(businessPage, data);
+                return await getJobInfo(businessPage);
+            });
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
+
 
     async createJob(data) {
         this.isBusy = true;
@@ -222,7 +236,7 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 const addPartResult = await addParts(businessPage, data);
-                console.log("partsPoPrefix:",data.partsPoPrefix)
+                console.log("partsPoPrefix:", data.partsPoPrefix)
                 if (!data.partsPoPrefix) {
                     return addPartResult;
                 }
