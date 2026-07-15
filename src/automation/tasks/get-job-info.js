@@ -61,8 +61,11 @@ export async function getJobInfo(businessPage) {
 
 
     //get parts info
-    // const partNos = await rightFrame.locator('#divRepair').locator('#REGION').inputValue();
-
+    const partNos = await rightFrame
+        .locator('#partsTableBody [name="PARTS_CODE"]')
+        .evaluateAll(inputs =>
+            inputs.map(input => input.value.trim()).filter(Boolean)
+        );
 
     //change status
     const status = await rightFrame.locator('#STATUS').inputValue();
@@ -90,6 +93,7 @@ export async function getJobInfo(businessPage) {
         faultReport,
         diagnosisNote,
         repairCode,
+        partNos,
         status,
         reason
     };
