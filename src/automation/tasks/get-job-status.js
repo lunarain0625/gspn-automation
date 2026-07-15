@@ -24,15 +24,15 @@ export async function getJobStatus(businessPage) {
         .replace(/&nbsp;/g, ' ') // 如果读取的是 innerHTML 才需要，textContent 通常不用
         .trim();
 
-    const values = cleanedJobInfoText
+    const [vendorRa, warrantyBillNo, ascJobNo, createDate] = cleanedJobInfoText
         .split('//')
         .map(v => v.trim());
 
-    const createDate = values[3];
     return {
         success: true,
         status,
         reason,
+        ascJobNo,
         createDate
     };
 }
