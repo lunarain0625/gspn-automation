@@ -222,7 +222,8 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 const addPartResult = await addParts(businessPage, data);
-                if (addPartResult.message === 'No parts to add') {
+                console.log("partsPoPrefix:",data.partsPoPrefix)
+                if (!data.partsPoPrefix) {
                     return addPartResult;
                 }
                 const po = await createPo(businessPage, data);

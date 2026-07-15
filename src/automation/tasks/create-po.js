@@ -26,7 +26,7 @@ export async function createPo(businessPage, data) {
         throw new Error('Failed to open Create PO popup after 5 attempts');
     }
     await poPage.locator('#progressloading').waitFor({state: 'hidden'});
-    await poPage.locator('input[name="poNo"]').fill(`${data.vendorRa}${data.warrantyType}`);
+    await poPage.locator('input[name="poNo"]').fill(`${data.partsPoPrefix}${data.vendorRa}${data.partsPoForStock ? 'ST' : ''}`);
     const verifyButton = poPage.getByRole('link', {name: 'Verify'})
     const saveButton = poPage.getByRole('link', {name: 'Save'})
     // await clickUntilVisible(
