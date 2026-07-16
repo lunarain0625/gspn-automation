@@ -1,10 +1,21 @@
-
 export async function billingJob(businessPage, data) {
     const rightFrame = businessPage
         .locator('iframe[name="rightContents"]')
         .contentFrame();
     await rightFrame.locator('#STATUS').waitFor({state: 'visible'});
     console.log('✅ Repair info updated, proceeding to billing...');
+
+    const billingButton = rightFrame
+        .locator('#divButtons')
+        .getByRole('button', {name: 'Billing',exact: true});
+
+    if (!await billingButton.isVisible()) {
+        return {
+            success: true,
+            message: 'Billing not required'
+        }
+    }
+
     const billingSuccess = await handleBilling(businessPage, rightFrame);
     if (!billingSuccess) {
         throw new Error('Billing failed');

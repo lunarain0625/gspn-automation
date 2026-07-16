@@ -1,4 +1,4 @@
-import {clickUntil, handleConfirmNotice} from "../utils/ui-helper.js";
+import {clickUntil, handleConfirmNotice, handleWarrantyNotice} from "../utils/ui-helper.js";
 
 export async function completeJob(businessPage, data) {
     const rightFrame = businessPage
@@ -36,12 +36,6 @@ export async function completeJob(businessPage, data) {
         .locator('#divButtons')
         .getByRole('button', {name: 'Save'});
 
-    //success dialog
-    const successDialogPromise = businessPage.waitForEvent('dialog', {
-        timeout: 15000,
-        predicate: dialog => dialog.message().includes('[GCIC] Success update.')
-    });
-
     businessPage.on('dialog', async dialog => {
         console.log('📦 Dialog:', dialog.message());
 
@@ -55,14 +49,18 @@ export async function completeJob(businessPage, data) {
         trigger: saveButton,
         page: businessPage,
         actionLabel: '[Save Repair Completed]',
-        readyTimeoutMs: 15000,
+        readyTimeoutMs: 30000,
         isReady: async () => {
-            // 先处理 Confirm Notice
-            await handleConfirmNotice(businessPage);
+
+            console.log("after click checking is Ready:")
+            await handleWarrantyNotice(businessPage);
 
             // 再检查成功弹窗
             try {
-
+                const successDialogPromise = businessPage.waitForEvent('dialog', {
+                    timeout: 30000,
+                    predicate: dialog => dialog.message().includes('[GCIC] Success update.')
+                });
                 const dialog = await successDialogPromise;
                 console.log('dialog checked in isReady:', dialog.message());
                 return dialog.message().includes('[GCIC] Success update.');

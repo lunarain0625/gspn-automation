@@ -191,8 +191,8 @@ export async function testCompleteJob(client) {
 
     const data = {
         "source": "MANUAL",
-        "solvupId": "WI31013271",
-        "vendorRa": "4437780046",
+        "solvupId": "WI70329095",
+        "vendorRa": "4438891971",
         "repairCode": "SRC038",
         "warrantyType": "OW"
     };

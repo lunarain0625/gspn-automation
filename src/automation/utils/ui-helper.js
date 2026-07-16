@@ -215,7 +215,7 @@ export async function handleConfirmNotice(page) {
         .locator('iframe[name="rightContents"]')
         .contentFrame();
 
-    const confirmNotice = rightFrame.locator('#divConfirmNotice');
+    const confirmNotice = rightFrame.locator("#divConfirmNotice");
 
     await confirmNotice.waitFor({state: 'visible', timeout: 3000}).catch(() => {
     });
@@ -238,6 +238,37 @@ export async function handleConfirmNotice(page) {
     console.log('✅ Confirm Notice Save clicked');
     return true;
 }
+
+export async function handleWarrantyNotice(page) {
+
+    const rightFrame = page
+        .locator('iframe[name="rightContents"]')
+        .contentFrame();
+
+    const confirmNotice = rightFrame.locator("#divWtyNoticeInfo");
+
+    await confirmNotice.waitFor({state: 'visible', timeout: 30000}).catch(() => {
+    });
+
+    if (!(await confirmNotice.isVisible().catch(() => false))) {
+        return false;
+    }
+
+    const message = await confirmNotice
+        .locator('#tbodyWtyNotice')
+        .innerText()
+        .catch(() => '');
+
+    console.log('⚠️ Warranty Notice:', message);
+
+    await confirmNotice
+        .getByRole('link', {name: 'Repair Completed'})
+        .click();
+
+    console.log('✅ Warranty Notice Repair Completed clicked');
+    return true;
+}
+
 
 export async function waitForLoadingOverlay(page) {
     const loadingOverlay = page.locator('iframe[name="rightContents"]')
