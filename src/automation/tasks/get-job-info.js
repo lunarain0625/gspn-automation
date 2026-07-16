@@ -1,4 +1,5 @@
 import {clickUntil, fillVisibleInputById, handleConfirmNotice} from "../utils/ui-helper.js";
+import {normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
 export async function getJobInfo(businessPage) {
 
@@ -51,7 +52,8 @@ export async function getJobInfo(businessPage) {
     const productSerialNumber = await rightFrame.locator('#divProduct').locator('#IMEI').inputValue();
 
     //get warranty info
-    const warrantyType = await rightFrame.locator('#divProduct').locator('#IN_OUT_WTY').inputValue().catch(() => '');
+    const warrantyTypeRaw = await rightFrame.locator('#divProduct').locator('#IN_OUT_WTY').inputValue().catch(() => '');
+    const warrantyType = normalizeWarrantyResult(warrantyTypeRaw);
     const purchaseDate = await rightFrame.locator('#divProduct').locator('#PURCHASE_DATE').inputValue().catch(() => '');
 
     //get diagnosis info
