@@ -242,11 +242,8 @@ export async function handleConfirmNotice(page) {
 export async function waitForLoadingOverlay(page) {
     const loadingOverlay = page.locator('iframe[name="rightContents"]')
         .contentFrame().locator('#progressloading');
-    console.log("visible before wait to show:", await loadingOverlay.isVisible());
     await loadingOverlay.waitFor({state: 'visible', timeout: 3000}).catch(() => {
     });
-    console.log("visible after wait to show:", await loadingOverlay.isVisible());
     await loadingOverlay.waitFor({state: 'hidden', timeout: 15000}).catch(() => {
     });
-    console.log("visible after wait to hide:", await loadingOverlay.isVisible());
 }

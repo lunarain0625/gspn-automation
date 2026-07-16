@@ -5,7 +5,7 @@ import {
     testSearchPart,
     testCompleteJob,
     testAddParts,
-    testGetDeviceInfo, testLogin, testGetJobStatus, testGetJobInfo
+    testGetDeviceInfo, testLogin, testGetJobStatus, testGetJobInfo, testUploadJobAttachments
 } from './tasks.test.js';
 
 async function run() {
@@ -15,7 +15,8 @@ async function run() {
 
         await gspnClient.init();
         // await testSearchPart(gspnClient);
-        await testGetJobInfo(gspnClient);
+        // await testGetJobInfo(gspnClient);
+        await testUploadJobAttachments(gspnClient)
         // await testGetDeviceInfo(gspnClient);
         // await testCreateJob(gspnClient);
         // await testGetJobStatus(gspnClient);

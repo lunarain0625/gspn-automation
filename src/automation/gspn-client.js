@@ -13,6 +13,7 @@ import {updateJobStatus} from "./tasks/update-job-status.js";
 import {billingJob} from "./tasks/billing-job.js";
 import {getJobStatus} from "./tasks/get-job-status.js";
 import {getJobInfo} from "./tasks/get-job-info.js";
+import {uploadJobAttachments} from "./tasks/upload-job-attachments.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -191,6 +192,19 @@ class GspnClient {
         }
     }
 
+    async uploadJobAttachments(data) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                await findJob(businessPage, data);
+                return await uploadJobAttachments(businessPage, data);
+            });
+        } finally {
+            this.isBusy = false;
+            await this.keepAliveOnce();
+        }
+    }
+
 
     async createJob(data) {
         this.isBusy = true;
@@ -217,7 +231,12 @@ class GspnClient {
                 // 2️⃣ 根据 action 分发
                 switch (action) {
                     case 'repair_info':
-                        return await updateJobRepairInfo(businessPage, data);
+                        const result = await updateJobRepairInfo(businessPage, data);
+                        if (data.attachments && data.attachments.length > 0) {
+                            await findJob(businessPage, data);
+                            await uploadJobAttachments(businessPage, data);
+                        }
+                        return result
                     default:
                         throw new Error(`Unknown action: ${action}`);
                 }
