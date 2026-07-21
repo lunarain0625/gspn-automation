@@ -49,7 +49,8 @@ class GspnClient {
     async initBrowser() {
         if (this.browser) return;
         this.browser = await chromium.launch({
-            headless: process.env.PLAYWRIGHT_HEADLESS !== 'false'
+            headless: process.env.PLAYWRIGHT_HEADLESS !== 'false',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
     }
 
@@ -214,7 +215,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            console.log('✅ Job creation completed, keeping session alive...');
             await this.keepAliveOnce();
         }
     }

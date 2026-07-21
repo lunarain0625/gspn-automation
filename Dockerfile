@@ -2,6 +2,8 @@ FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 
 WORKDIR /app
 
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
 COPY package*.json ./
 RUN npm ci
 

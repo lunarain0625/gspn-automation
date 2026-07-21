@@ -99,19 +99,19 @@ export async function testCreateJob(client) {
 
     const data =
         {
-            "source": "MANUAL",
-            "solvupId": "WI31229927",
-            "purchaseDate": null,
+            "source": "SOLVUP",
+            "solvupId": "12292297",
+            "purchaseDate": "25/09/2025",
             "warrantyType": "OW",
-            "customerEmail": "sanjeev1732@yahoo.com",
-            "customerPhone": "0430007915",
-            "customerState": null,
-            "customerSuburb": "SPRINGVALE",
-            "customerAddress": "23/83 view road",
-            "customerLastName": "Chopra",
-            "customerPostCode": "3171",
-            "customerFirstName": "Sanjeev",
-            "productSerialNumber": "351541631229927"
+            "customerEmail": "Punima_s@hotmail.com",
+            "customerPhone": "0450719508",
+            "customerState": "Vic",
+            "customerSuburb": "Craigieburn",
+            "customerAddress": "165 fairways blvd",
+            "customerLastName": "Bala",
+            "customerPostCode": "3064",
+            "customerFirstName": "Punima",
+            "productSerialNumber": "Not requested by retailer"
         }
     const testData = {}
 
