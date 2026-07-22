@@ -140,48 +140,22 @@ export async function testUpdateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "TWI30051267",
-            "vendorRa": "4438957197",
+            "solvupId": "WI50078810",
+            "vendorRa": "4439352167",
             "irisSympt": "160",
             "repairCode": "SRC500",
-            "attachments": [{
-                "id": "cmrn2jgh6000015kzd4jtwrv4",
-                "url": "https://pub-500107de24c64d6cacb0fe46cbd795d4.r2.dev/attachments/cmrlliinm000015o21ra8zho4/1784179721095-Item_20260615T012032.pdf",
-                "type": "PRODUCT_DEFECT_IMAGE",
-                "caseId": "cmrlliinm000015o21ra8zho4",
-                "fileSize": 73761,
-                "filename": "Item_20260615T012032.pdf",
-                "createdAt": "2026-07-16T05:28:42.282Z",
-                "storageKey": "attachments/cmrlliinm000015o21ra8zho4/1784179721095-Item_20260615T012032.pdf"
-            }, {
-                "id": "cmrn2iwrr000415pijnf2huvc",
-                "url": "https://pub-500107de24c64d6cacb0fe46cbd795d4.r2.dev/attachments/cmrlliinm000015o21ra8zho4/1784179695058-NanoFlow_2.png",
-                "type": "OFFICIAL_DOCUMENT",
-                "caseId": "cmrlliinm000015o21ra8zho4",
-                "fileSize": 2582249,
-                "filename": "NanoFlow_2.png",
-                "createdAt": "2026-07-16T05:28:16.743Z",
-                "storageKey": "attachments/cmrlliinm000015o21ra8zho4/1784179695058-NanoFlow_2.png"
-            }, {
-                "id": "cmrn1mook000115pikr6dt01x",
-                "url": "https://pub-500107de24c64d6cacb0fe46cbd795d4.r2.dev/attachments/cmrlliinm000015o21ra8zho4/1784178192091-werribee_preview.png",
-                "type": "PROOF_OF_PURCHASE",
-                "caseId": "cmrlliinm000015o21ra8zho4",
-                "fileSize": 33561,
-                "filename": "werribee_preview.png",
-                "createdAt": "2026-07-16T05:03:13.268Z",
-                "storageKey": "attachments/cmrlliinm000015o21ra8zho4/1784178192091-werribee_preview.png"
-            }],
-            "faultReport": "nfd",
+            "attachments": [],
+            "faultReport": "quote rejected",
             "symptomCat1": "L7",
             "symptomCat2": "10",
             "symptomCat3": "01",
             "symptomName": "BROKEN SCREEN",
             "purchaseDate": null,
             "warrantyType": "OW",
-            "diagnosisNote": "rep kit",
+            "diagnosisNote": "quote rejected",
+            "quoteRejected": true,
             "irisSymptQcode": "SRC509",
-            "productSerialNumber": "350383130051267"
+            "productSerialNumber": "353137850078810"
         }
     ;
 

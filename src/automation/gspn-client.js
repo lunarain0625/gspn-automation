@@ -239,7 +239,6 @@ class GspnClient {
 
                 // 1️⃣ 先找到 job
                 await findJob(businessPage, data);
-
                 // 2️⃣ 根据 action 分发
                 switch (action) {
                     case 'repair_info':

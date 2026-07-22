@@ -1,5 +1,7 @@
 import {clickUntil, handleConfirmNotice, waitForLoadingOverlay} from "../utils/ui-helper.js";
 import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
+import {handleBilling, handleBillingCancel} from "./billing-job.js";
+import {updateJobStatus} from "./update-job-status.js";
 
 export async function updateJobRepairInfo(businessPage, data) {
     console.log('🔧 Updating job:', data);
@@ -9,6 +11,16 @@ export async function updateJobRepairInfo(businessPage, data) {
         .contentFrame();
     // 1️⃣ 确保在正确页面（非常关键）
     await rightFrame.locator('#STATUS').waitFor({state: 'visible'});
+
+
+    // check billing status
+    const billingCancelButton = rightFrame
+        .locator('#divButtons')
+        .getByRole('button', {name: 'Billing Cancel', exact: true});
+    if (await billingCancelButton.isVisible()) {
+        await handleBillingCancel(businessPage, rightFrame);
+        await updateJobStatus(businessPage, 'ST030', 'HP005');
+    }
 
     //warranty check
     const display = await rightFrame
