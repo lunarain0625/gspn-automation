@@ -167,6 +167,7 @@ class GspnClient {
             // await this.keepAliveOnce();
         }
     }
+
     async getDeviceInfoBySn(serialNumber, purchaseDate = null, checkWarranty = false) {
         this.isBusy = true;
         try {
@@ -266,7 +267,6 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 const addPartResult = await addParts(businessPage, data);
-                console.log("partsPoPrefix:", data.partsPoPrefix)
                 if (!data.partsPoPrefix) {
                     return addPartResult;
                 }
@@ -386,6 +386,8 @@ class GspnClient {
 
         await this.page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
+        }).catch(() => {
+            throw new Error('❌ MFA verification timed out');
         });
         this.isLoggedIn = true;
         console.log('✅ Login success');

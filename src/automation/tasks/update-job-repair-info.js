@@ -140,6 +140,13 @@ export async function updateJobRepairInfo(businessPage, data) {
         predicate: dialog => dialog.message().includes('[GCIC] Success update.')
     });
 
+    const failureDialogPromise = businessPage.waitForEvent('dialog', {
+        timeout: 30000,
+        predicate: dialog => dialog.message().includes('[GD] No IQC result found. Please run IQC.')
+    });
+
+    let failureMessage = null;
+
     businessPage.on('dialog', async dialog => {
         console.log('📦 Dialog:', dialog.message());
 
@@ -158,15 +165,28 @@ export async function updateJobRepairInfo(businessPage, data) {
             // 先处理 Confirm Notice
             await handleConfirmNotice(businessPage);
 
-            // 再检查成功弹窗
+            // 再检查成功或失败弹窗
             try {
-                const dialog = await successDialogPromise;
-                return dialog.message().includes('[GCIC] Success update.');
+                const dialog = await Promise.race([successDialogPromise, failureDialogPromise]);
+                const msg = dialog.message();
+                if (msg.includes('[GD] No IQC result found. Please run IQC.')) {
+                    failureMessage = msg;
+                    return true;
+                }
+                return msg.includes('[GCIC] Success update.');
             } catch {
                 return false;
             }
         }
     });
+    if (failureMessage) {
+        console.log(`❌ job update failed: ${failureMessage}`);
+        return {
+            success: false,
+            message: failureMessage
+        };
+    }
+
     console.log('✅ job update success confirmed');
 
     // await businessPage.pause();
