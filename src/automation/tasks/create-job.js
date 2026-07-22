@@ -363,6 +363,7 @@ export async function createJob(businessPage, data, repeat = false) {
     if (errorText?.includes('[G-DD008 : ASC Job No already exists.]')) {
         throw new Error('[G-DD008 : ASC Job No already exists.]');
     }
+
     const serviceNo = errorText
         ?.match(/Order\s+was\s+created\s+by\s+No\.(\d+)/i)?.[1];
     console.log('Extracted service number:', serviceNo);

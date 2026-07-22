@@ -14,6 +14,7 @@ import {billingJob} from "./tasks/billing-job.js";
 import {getJobStatus} from "./tasks/get-job-status.js";
 import {getJobInfo} from "./tasks/get-job-info.js";
 import {uploadJobAttachments} from "./tasks/upload-job-attachments.js";
+import {searchPartsByModel} from "./tasks/search-parts-by-model.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -155,6 +156,17 @@ class GspnClient {
         }
     }
 
+    async searchPartsByModel(data) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                return await searchPartsByModel(businessPage, data);
+            });
+        } finally {
+            this.isBusy = false;
+            // await this.keepAliveOnce();
+        }
+    }
     async getDeviceInfoBySn(serialNumber, purchaseDate = null, checkWarranty = false) {
         this.isBusy = true;
         try {

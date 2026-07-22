@@ -24,6 +24,29 @@ export async function searchPartController(req, res) {
     }
 }
 
+export async function searchPartsByModelController(req, res) {
+    try {
+        const data = req.body;
+
+        if (!data?.modelName) {
+            return res.status(400).json({
+                success: false,
+                message: 'modelName is required'
+            });
+        }
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.searchPartsByModel(data);
+
+        return res.json(result);
+    } catch (error) {
+        console.error('searchPartsByModelController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 export async function getDeviceController(req, res) {
     try {
         const {serialNumber, purchaseDate, checkWarranty} = req.query;

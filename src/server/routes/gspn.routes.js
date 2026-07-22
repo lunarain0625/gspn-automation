@@ -7,13 +7,14 @@ import {
     deliverGoodController,
     addPartsController,
     getDeviceController, gspnStateController, gspnLoginController, gspnLogoutController, getJobStatusController,
-    getJobInfoController
+    getJobInfoController, searchPartsByModelController
 } from '../controllers/gspn.controller.js';
 import {requireApiKey} from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 router.use(requireApiKey);
 router.post('/search-part', searchPartController);
+router.post('/search-parts-by-model', searchPartsByModelController);
 router.post('/create-job', createJobController);
 router.post('/update-job', updateJobController);
 router.post('/add-parts', addPartsController);

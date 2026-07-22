@@ -14,6 +14,16 @@ export async function testSearchPart(client) {
     console.log('✅ searchPart passed\n');
 }
 
+export async function testSearchPartsByModel(client) {
+    console.log('🔍 Testing searchPart...\n');
+    const data = {
+        "modelName": "SM-X526BZAAATS",
+        "keyword": "LCD"
+    }; // 👉 你常用测试值
+    const result = await client.searchPartsByModel(data);
+    console.log('Result:', result);
+}
+
 export async function testLogin(client) {
     console.log('🔑 Testing login...\n');
 
@@ -100,20 +110,19 @@ export async function testCreateJob(client) {
     const data =
         {
             "source": "SOLVUP",
-            "solvupId": "12292297",
-            "purchaseDate": "25/09/2025",
-            "warrantyType": "OW",
-            "customerEmail": "Punima_s@hotmail.com",
-            "customerPhone": "0450719508",
+            "solvupId": "12255865",
+            "purchaseDate": "25/08/2024",
+            "warrantyType": "IW",
+            "customerEmail": "Shayne.albert@gmail.com",
+            "customerPhone": "0460502151",
             "customerState": "Vic",
-            "customerSuburb": "Craigieburn",
-            "customerAddress": "165 fairways blvd",
-            "customerLastName": "Bala",
-            "customerPostCode": "3064",
-            "customerFirstName": "Punima",
-            "productSerialNumber": "Not requested by retailer"
+            "customerSuburb": "Albion",
+            "customerAddress": "2a maylands street",
+            "customerLastName": "Albert",
+            "customerPostCode": "3020",
+            "customerFirstName": "Shayne",
+            "productSerialNumber": "350256190537708"
         }
-    const testData = {}
 
     const result = await client.createJob(data);
 
