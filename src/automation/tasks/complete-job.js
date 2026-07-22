@@ -36,14 +36,18 @@ export async function completeJob(businessPage, data) {
         .locator('#divButtons')
         .getByRole('button', {name: 'Save'});
 
-    businessPage.on('dialog', async dialog => {
+    let successDialogSeen = false;
+    const dialogHandler = async dialog => {
         console.log('📦 Dialog:', dialog.message());
-
+        if (dialog.message().includes('[GCIC] Success update.')) {
+            successDialogSeen = true;
+        }
         try {
             await dialog.accept();
         } catch {
         }
-    });
+    };
+    businessPage.on('dialog', dialogHandler);
 
     await clickUntil({
         trigger: saveButton,
@@ -51,24 +55,12 @@ export async function completeJob(businessPage, data) {
         actionLabel: '[Save Repair Completed]',
         readyTimeoutMs: 30000,
         isReady: async () => {
-
-            console.log("after click checking is Ready:")
             await handleWarrantyNotice(businessPage);
-
-            // 再检查成功弹窗
-            try {
-                const successDialogPromise = businessPage.waitForEvent('dialog', {
-                    timeout: 30000,
-                    predicate: dialog => dialog.message().includes('[GCIC] Success update.')
-                });
-                const dialog = await successDialogPromise;
-                console.log('dialog checked in isReady:', dialog.message());
-                return dialog.message().includes('[GCIC] Success update.');
-            } catch {
-                return false;
-            }
+            return successDialogSeen;
         }
     });
+
+    businessPage.off('dialog', dialogHandler);
 
     return {
         success: true,
