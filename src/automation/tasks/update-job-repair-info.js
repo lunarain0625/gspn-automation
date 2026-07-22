@@ -1,25 +1,9 @@
 import {clickUntil, handleConfirmNotice, waitForLoadingOverlay} from "../utils/ui-helper.js";
 import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
-const REPAIR_CODE_CONFIG = {
-    //NDF
-    SRC038: {
-        LAB_TYPE: 'FL',
-        IRIS_DEFECT: '4',
-        IRIS_REPAIR: 'Y',
-    },
-    //PARTS REPLACEMENT
-    SRC500: {
-        LAB_TYPE: 'L2',
-        IRIS_DEFECT: 'N',
-        IRIS_REPAIR: 'A'
-    },
-};
-
-
 export async function updateJobRepairInfo(businessPage, data) {
     console.log('🔧 Updating job:', data);
-    const config = REPAIR_CODE_CONFIG[data.repairCode];
+
     const rightFrame = businessPage
         .locator('iframe[name="rightContents"]')
         .contentFrame();
@@ -90,7 +74,7 @@ export async function updateJobRepairInfo(businessPage, data) {
     }
 
     //select type
-    if (data.repairCode === 'SRC038') {
+    if (data.repairCode === 'SRC038' || data.quoteRejected) {
         await rightFrame.locator('#SERVICE_TYPE').selectOption('IS');
     } else if (data.source === 'SOLVUP') {
         await rightFrame.locator('#SERVICE_TYPE').selectOption('PS');
@@ -116,9 +100,9 @@ export async function updateJobRepairInfo(businessPage, data) {
     //fill description
     await rightFrame.locator('#DEFECTDESC_L').fill(data.faultReport);
     await rightFrame.locator('#REPAIRDESC_L').fill(data.diagnosisNote);
-    await rightFrame.locator('#LAB_TYPE').selectOption(config.LAB_TYPE);
+    await rightFrame.locator('#LAB_TYPE').selectOption('FL');
     await rightFrame.locator('#IRIS_CONDI').selectOption('1');
-    await rightFrame.locator('#IRIS_DEFECT').selectOption(config.IRIS_DEFECT);
+    await rightFrame.locator('#IRIS_DEFECT').selectOption(data.repairCode === 'SRC038' ? '4' : 'N');
     await rightFrame.locator('#IRIS_SYMPT_QCODE').selectOption(data.irisSymptQcode);
     await rightFrame.locator('#IRIS_SYMPT').selectOption(data.irisSympt);
 

@@ -27,7 +27,7 @@ export async function addParts(businessPage, data) {
             message: 'No parts to add'
         };
     }
-
+    await rightFrame.locator('#LAB_TYPE').selectOption('L2');
     await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption('SRC500');
     await rightFrame.locator('#IRIS_REPAIR').selectOption('A');
 
