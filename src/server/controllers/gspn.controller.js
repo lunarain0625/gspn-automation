@@ -122,6 +122,37 @@ export async function getJobInfoController(req, res) {
     }
 }
 
+export async function getJobSheetController(req, res) {
+    try {
+        const {vendorRa} = req.query;
+
+        if (!vendorRa) {
+            return res.status(400).json({
+                success: false,
+                message: 'vendorRa is required'
+            });
+        }
+
+        await gspnQueryClient.init();
+        const result = await gspnQueryClient.getJobSheet({vendorRa});
+
+        if (!result.success) {
+            return res.status(500).json(result);
+        }
+
+        const pdfBuffer = Buffer.from(result.pdf, 'base64');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="job-sheet-${vendorRa}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (error) {
+        console.error('getJobSheetController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 //workflow client controller
 export async function createJobController(req, res) {
     try {

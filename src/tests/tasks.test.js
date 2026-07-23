@@ -224,3 +224,26 @@ export async function testGetDeviceInfo(client) {
 
     console.log('✅ searchJobBySo passed\n');
 }
+
+export async function testGetJobSheet(client) {
+    console.log('📄 Testing getJobSheet...\n');
+
+    const data = {
+        vendorRa: '4438957197'
+    };
+    const result = await client.getJobSheet(data);
+
+    console.log('Result success:', result?.success);
+    console.log('PDF base64 length:', result?.pdf?.length);
+
+    if (!result?.success) {
+        throw new Error('❌ getJobSheet failed');
+    }
+
+    if (!result?.pdf) {
+        throw new Error('❌ getJobSheet failed: no pdf returned');
+    }
+
+    console.log('✅ getJobSheet passed\n');
+}
+

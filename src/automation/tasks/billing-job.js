@@ -34,42 +34,29 @@ export async function handleBilling(businessPage, rightFrame) {
         const billingButton = rightFrame
             .locator('#divButtons')
             .getByRole('button', {name: 'Billing'});
-
         let page2;
-
         for (let i = 0; i < 5; i++) {
-
             console.log(`🔄 Billing popup attempt ${i + 1}`);
-
             try {
-
                 const existingPages = businessPage.context().pages().length;
-
                 await billingButton.click();
-
                 try {
                     await businessPage.context().waitForEvent('page', {
                         timeout: 3000
                     });
                 } catch {
                 }
-
                 const allPages = businessPage.context().pages();
                 if (allPages.length > existingPages) {
                     page2 = allPages[allPages.length - 1];
                 }
-
                 if (page2) {
                     console.log(`✅ Billing popup opened on attempt ${i + 1}`);
                     break;
                 }
-
                 console.log(`⚠️ No popup detected on attempt ${i + 1}`);
-
             } catch (err) {
-
                 console.log(`⚠️ Billing click failed on attempt ${i + 1}: ${err.message}`);
-
             }
         }
 

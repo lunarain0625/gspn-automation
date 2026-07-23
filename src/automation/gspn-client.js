@@ -15,6 +15,7 @@ import {getJobStatus} from "./tasks/get-job-status.js";
 import {getJobInfo} from "./tasks/get-job-info.js";
 import {uploadJobAttachments} from "./tasks/upload-job-attachments.js";
 import {searchPartsByModel} from "./tasks/search-parts-by-model.js";
+import {getJobSheet} from "./tasks/get-job-sheet.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -203,6 +204,19 @@ class GspnClient {
         } finally {
             this.isBusy = false;
             await this.keepAliveOnce();
+        }
+    }
+
+    async getJobSheet(data) {
+        this.isBusy = true;
+        try {
+            return await this.withBusinessPage(async (businessPage) => {
+                await findJob(businessPage, data);
+                return await getJobSheet(businessPage);
+            });
+        } finally {
+            this.isBusy = false;
+            // await this.keepAliveOnce();
         }
     }
 
