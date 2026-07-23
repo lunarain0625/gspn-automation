@@ -314,7 +314,7 @@ export async function createJob(businessPage, data, repeat = false) {
     const solvupPrefix = 'TSOLVUP';
     const walkInPrefix = 'TWI';
 
-    const ascJobNo = data.ascJobNo || (
+    let ascJobNo = data.ascJobNo || (
         data.source === 'SOLVUP'
             ? `${solvupPrefix}${data.solvupId}`
             : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
@@ -357,11 +357,32 @@ export async function createJob(businessPage, data, repeat = false) {
             throw e;
         }
     }
-    const errorText = await rightContentsFrame
+    let errorText = await rightContentsFrame
         .locator('#errBody')
         .textContent();
-    if (errorText?.includes('[G-DD008 : ASC Job No already exists.]')) {
-        throw new Error('[G-DD008 : ASC Job No already exists.]');
+    const baseAscJobNo = ascJobNo;
+    let suffixIndex = 0;
+    while (errorText?.includes('[G-DD008 : ASC Job No already exists.]')) {
+        if (suffixIndex >= 26) {
+            throw new Error('Unable to resolve duplicate ASC Job No after exhausting a-z suffixes');
+        }
+        const suffix = String.fromCharCode(97 + suffixIndex);
+        suffixIndex++;
+        ascJobNo = baseAscJobNo + suffix;
+        console.log(`⚠️ ASC Job No already exists, retrying with ${ascJobNo}`);
+        await rightContentsFrame
+            .locator('#moretailid1')
+            .locator('input[name="ASC_JOB_NO"]').fill(ascJobNo);
+        await clickUntilVisible({
+            trigger: saveLink,
+            target: orderCreatedMessage,
+            page: businessPage,
+            maxAttempts: 1,
+            actionLabel: 'Retry Save Job'
+        });
+        errorText = await rightContentsFrame
+            .locator('#errBody')
+            .textContent();
     }
 
     const serviceNo = errorText
