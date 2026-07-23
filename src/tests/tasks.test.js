@@ -140,13 +140,13 @@ export async function testUpdateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "labType": "FL",
-            "partNos": [],
+            "labType": "L2",
+            "partNos": ["GH82-29451A", "GH82-29450A", "GH82-29454A", "GH82-29456A", "GH82-29461C"],
             "solvupId": "WI30051267",
             "vendorRa": "4439420124",
             "irisSympt": "652",
-            "irisRepair": "Y",
-            "repairCode": "SRC038",
+            "irisRepair": "A",
+            "repairCode": "SRC500",
             "attachments": [],
             "faultReport": "no display",
             "symptomCat1": "L4",
@@ -162,7 +162,6 @@ export async function testUpdateJob(client) {
             "productSerialNumber": "350383130051267"
         }
     ;
-
     const result = await client.updateJob('repair_info', data);
 
     console.log('Result:', result);

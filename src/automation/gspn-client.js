@@ -16,6 +16,7 @@ import {getJobInfo} from "./tasks/get-job-info.js";
 import {uploadJobAttachments} from "./tasks/upload-job-attachments.js";
 import {searchPartsByModel} from "./tasks/search-parts-by-model.js";
 import {getJobSheet} from "./tasks/get-job-sheet.js";
+import {resetJob} from "./tasks/reset-job.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -250,6 +251,7 @@ class GspnClient {
                 // 2️⃣ 根据 action 分发
                 switch (action) {
                     case 'repair_info':
+                        await resetJob(businessPage, data);
                         const result = await updateJobRepairInfo(businessPage, data);
                         if (data.attachments && data.attachments.length > 0) {
                             await findJob(businessPage, data);
