@@ -153,7 +153,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            // await this.keepAliveOnce();
         }
     }
 
@@ -165,7 +164,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            // await this.keepAliveOnce();
         }
     }
 
@@ -177,7 +175,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            // await this.keepAliveOnce();
         }
     }
 
@@ -190,7 +187,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
         }
     }
 
@@ -203,7 +199,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
         }
     }
 
@@ -216,7 +211,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            // await this.keepAliveOnce();
         }
     }
 
@@ -229,7 +223,6 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
         }
     }
 
@@ -242,7 +235,7 @@ class GspnClient {
             });
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            await this.keepAliveOnce("[createJob]");
         }
     }
 
@@ -270,7 +263,7 @@ class GspnClient {
 
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            await this.keepAliveOnce("[updateJob]");
         }
     }
 
@@ -292,7 +285,7 @@ class GspnClient {
 
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            await this.keepAliveOnce("[addParts]");
         }
     }
 
@@ -311,7 +304,7 @@ class GspnClient {
 
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            await this.keepAliveOnce("[completeJob]");
         }
     }
 
@@ -328,7 +321,7 @@ class GspnClient {
 
         } finally {
             this.isBusy = false;
-            await this.keepAliveOnce();
+            await this.keepAliveOnce("[deliverGood]");
         }
     }
 
@@ -412,8 +405,8 @@ class GspnClient {
         };
     }
 
-    async keepAliveOnce() {
-        console.log("isBusy:", this.isBusy, "page alive:", this.page && !this.page.isClosed());
+    async keepAliveOnce(label = "[trigger by timer]") {
+        console.log(label, "isBusy:", this.isBusy, "page alive:", this.page && !this.page.isClosed());
         if (this.isBusy || !this.page || this.page.isClosed()) return;
 
         try {

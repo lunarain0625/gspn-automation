@@ -140,22 +140,26 @@ export async function testUpdateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "solvupId": "WI50078810",
-            "vendorRa": "4439352167",
-            "irisSympt": "160",
+            "labType": "L2",
+            "solvupId": "WI30051267",
+            "vendorRa": "4439420124",
+            "irisSympt": "652",
+            "irisRepair": "A",
             "repairCode": "SRC500",
             "attachments": [],
-            "faultReport": "quote rejected",
-            "symptomCat1": "L7",
-            "symptomCat2": "10",
-            "symptomCat3": "01",
-            "symptomName": "BROKEN SCREEN",
+            "partNos": [],
+            "faultReport": "no display",
+            "symptomCat1": "L4",
+            "symptomCat2": "01",
+            "symptomCat3": "02",
+            "symptomName": null,
             "purchaseDate": null,
             "warrantyType": "OW",
-            "diagnosisNote": "quote rejected",
-            "quoteRejected": true,
+            "conditionCode": "1",
+            "diagnosisNote": "replace octa",
+            "quoteRejected": false,
             "irisSymptQcode": "SRC509",
-            "productSerialNumber": "353137850078810"
+            "productSerialNumber": "350383130051267"
         }
     ;
 

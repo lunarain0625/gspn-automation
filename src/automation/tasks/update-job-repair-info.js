@@ -18,9 +18,42 @@ export async function updateJobRepairInfo(businessPage, data) {
         .locator('#divButtons')
         .getByRole('button', {name: 'Billing Cancel', exact: true});
     if (await billingCancelButton.isVisible()) {
+        console.log('Billing Cancel Button is visible');
         await handleBillingCancel(businessPage, rightFrame);
         await updateJobStatus(businessPage, 'ST030', 'HP005');
     }
+
+
+    // check parts status
+    if (data.partNos?.length === 0) {
+        const addedPartNos = await rightFrame
+            .locator('#partsTableBody [name="PARTS_CODE"]')
+            .evaluateAll(inputs =>
+                inputs.map(input => input.value.trim()).filter(Boolean)
+            );
+
+        if (addedPartNos.length > 0) {
+            console.log(`🗑️ Removing ${addedPartNos.length} existing parts`);
+            while (await rightFrame.locator('#partsTableBody tr').count() > 0) {
+                const lastRow = rightFrame.locator('#partsTableBody tr').last();
+                const deleteBtn = lastRow.locator('a[name="partsDeleteBtn"]');
+                if (await deleteBtn.count() === 0) {
+                    break;
+                }
+                businessPage.once('dialog', async dialog => {
+                    console.log(dialog.message());
+                    await dialog.accept(); // 点确定
+                });
+                await deleteBtn.click();
+                await businessPage.waitForTimeout(1000);
+                await lastRow.waitFor({state: 'detached', timeout: 10000}).catch(() => {
+                });
+                await waitForLoadingOverlay(businessPage);
+            }
+        }
+    }
+
+    await rightFrame.locator('#STATUS').waitFor({state: 'visible'});
 
     //warranty check
     const display = await rightFrame
