@@ -112,17 +112,20 @@ export async function updateJobRepairInfo(businessPage, data) {
     //fill description
     await rightFrame.locator('#DEFECTDESC_L').fill(data.faultReport);
     await rightFrame.locator('#REPAIRDESC_L').fill(data.diagnosisNote);
-    await rightFrame.locator('#LAB_TYPE').selectOption('FL');
-    await rightFrame.locator('#IRIS_CONDI').selectOption('1');
-    await rightFrame.locator('#IRIS_DEFECT').selectOption(data.repairCode === 'SRC038' ? '4' : 'N');
+    await rightFrame.locator('#LAB_TYPE').selectOption(data.labType || 'FL');
+    await rightFrame.locator('#IRIS_CONDI').selectOption(data.conditionCode || '1');
+    await rightFrame.locator('#IRIS_DEFECT').selectOption((data.repairCode === 'SRC038' && !data.quoteRejected) ? '4' : 'N');
     await rightFrame.locator('#IRIS_SYMPT_QCODE').selectOption(data.irisSymptQcode);
     await rightFrame.locator('#IRIS_SYMPT').selectOption(data.irisSympt);
 
-    await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption('SRC038');
-    await rightFrame.locator('#IRIS_REPAIR').selectOption('Y');
+    await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption(data.repairCode);
+    await rightFrame.locator('#IRIS_REPAIR').selectOption(data.irisRepair);
+    if (data.repairCode === 'SRC500') {
+        await rightFrame.locator('#LAB_TYPE').selectOption('FL');
+        await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption('SRC038');
+        await rightFrame.locator('#IRIS_REPAIR').selectOption('Y');
+    }
 
-    // await rightFrame.locator('#IRIS_REPAIR_QCODE').selectOption(data.repairCode);
-    // await rightFrame.locator('#IRIS_REPAIR').selectOption(config.IRIS_REPAIR);
 
     await rightFrame.locator('select[name="SYMPTOM_CAT1"]').selectOption(data.symptomCat1);
     await rightFrame.locator('select[name="SYMPTOM_CAT2"]').selectOption(data.symptomCat2);
