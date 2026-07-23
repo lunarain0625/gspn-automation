@@ -181,6 +181,11 @@ export async function updateJobRepairInfo(businessPage, data) {
         predicate: dialog => dialog.message().includes('[GD] No IQC result found. Please run IQC.')
     });
 
+    const lockedDialogPromise = businessPage.waitForEvent('dialog', {
+        timeout: 30000,
+        predicate: dialog => dialog.message().includes('[GCIC] Ticket is locked, the other user is using this ticket.')
+    });
+
     let failureMessage = null;
 
     businessPage.on('dialog', async dialog => {
@@ -203,9 +208,12 @@ export async function updateJobRepairInfo(businessPage, data) {
 
             // 再检查成功或失败弹窗
             try {
-                const dialog = await Promise.race([successDialogPromise, failureDialogPromise]);
+                const dialog = await Promise.race([successDialogPromise, failureDialogPromise, lockedDialogPromise]);
                 const msg = dialog.message();
-                if (msg.includes('[GD] No IQC result found. Please run IQC.')) {
+                if (
+                    msg.includes('[GD] No IQC result found. Please run IQC.') ||
+                    msg.includes('[GCIC] Ticket is locked, the other user is using this ticket.')
+                ) {
                     failureMessage = msg;
                     return true;
                 }

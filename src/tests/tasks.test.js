@@ -140,14 +140,14 @@ export async function testUpdateJob(client) {
     const data =
         {
             "source": "MANUAL",
-            "labType": "L2",
+            "labType": "FL",
+            "partNos": [],
             "solvupId": "WI30051267",
             "vendorRa": "4439420124",
             "irisSympt": "652",
-            "irisRepair": "A",
-            "repairCode": "SRC500",
+            "irisRepair": "Y",
+            "repairCode": "SRC038",
             "attachments": [],
-            "partNos": [],
             "faultReport": "no display",
             "symptomCat1": "L4",
             "symptomCat2": "01",
