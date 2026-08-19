@@ -72,7 +72,8 @@ async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobN
     await serialInput.press('Enter');
     await imeiInput.fill(data.productSerialNumber || '');
     await imeiInput.press('Enter');
-    const dialog = await businessPage.waitForEvent('dialog', {timeout: 3000});
+    const dialog = await businessPage.waitForEvent('dialog', {timeout: 3000}).catch(() => {
+    });
     const dialogMessage = await dialog.message();
     if (dialogMessage.includes('Invaild IMEI No.')) {
         throw new Error('❌ Invalid IMEI number');
