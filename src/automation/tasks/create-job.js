@@ -74,10 +74,13 @@ async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobN
     await imeiInput.press('Enter');
     const dialog = await businessPage.waitForEvent('dialog', {timeout: 3000}).catch(() => {
     });
-    const dialogMessage = await dialog.message();
-    if (dialogMessage.includes('Invaild IMEI No.')) {
-        throw new Error('❌ Invalid IMEI number');
+    if (dialog) {
+        const dialogMessage = await dialog.message();
+        if (dialogMessage.includes('Invaild IMEI No.')) {
+            throw new Error('❌ Invalid IMEI number');
+        }
     }
+
     await rightContentsFrame.locator('#progressloading').waitFor({
         state: 'visible'
     }).catch(() => {
