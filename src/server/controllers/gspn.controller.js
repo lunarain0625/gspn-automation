@@ -285,9 +285,16 @@ export async function deliverGoodController(req, res) {
 export async function gspnStateController(req, res) {
     try {
         return res.json({
-            isLoggedIn: gspnClient.isLoggedIn,
-            isBusy: gspnClient.isBusy,
-            username: gspnClient.currentCredentials.username,
+            workflowClient: {
+                isLoggedIn: gspnClient.isLoggedIn,
+                isBusy: gspnClient.isBusy,
+                username: gspnClient.currentCredentials.username,
+            },
+            queryClient: {
+                isLoggedIn: gspnQueryClient.isLoggedIn,
+                isBusy: gspnQueryClient.isBusy,
+                username: gspnQueryClient.currentCredentials.username,
+            },
             success: true,
         });
     } catch (error) {
@@ -303,8 +310,17 @@ export async function gspnLoginController(req, res) {
     try {
         const {usePersonalAccount, username, password} = req.body;
         console.log('gspnLoginController called with username:', username);
-        const result = await gspnClient.login(usePersonalAccount, username, password)
-        return res.json(result);
+        
+        // Login both clients
+        const workflowResult = await gspnClient.login(usePersonalAccount, username, password);
+        const queryResult = await gspnQueryClient.login(usePersonalAccount, username, password);
+        
+        return res.json({
+            workflowClient: workflowResult,
+            queryClient: queryResult,
+            success: workflowResult.success && queryResult.success,
+            message: workflowResult.success && queryResult.success ? 'Both clients logged in successfully' : 'One or more clients failed to login'
+        });
     } catch (error) {
         console.error('gspnLoginController error:', error);
         return res.status(500).json({
@@ -316,9 +332,12 @@ export async function gspnLoginController(req, res) {
 
 export async function gspnLogoutController(req, res) {
     try {
+        // Logout both clients
         await gspnClient.logout();
+        await gspnQueryClient.logout();
         return res.json({
             success: true,
+            message: 'Both clients logged out successfully'
         });
     } catch (error) {
         console.error('gspnLogoutController error:', error);

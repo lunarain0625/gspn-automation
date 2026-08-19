@@ -110,20 +110,19 @@ export async function testCreateJob(client) {
     const data =
         {
             "source": "SOLVUP",
-            "solvupId": "12255865",
-            "purchaseDate": "25/08/2024",
+            "solvupId": "12422645",
+            "purchaseDate": "10/08/2025",
             "warrantyType": "IW",
-            "customerEmail": "Shayne.albert@gmail.com",
-            "customerPhone": "0460502151",
+            "customerEmail": "Karlene.reber@gmail.com",
+            "customerPhone": "0413063846",
             "customerState": "Vic",
-            "customerSuburb": "Albion",
-            "customerAddress": "2a maylands street",
-            "customerLastName": "Albert",
-            "customerPostCode": "3020",
-            "customerFirstName": "Shayne",
-            "productSerialNumber": "350256190537708"
+            "customerSuburb": "Melton",
+            "customerAddress": "9 bittern street",
+            "customerLastName": "Reber",
+            "customerPostCode": "3337",
+            "customerFirstName": "Karlene",
+            "productSerialNumber": "r92y3ovk4jd"
         }
-
     const result = await client.createJob(data);
 
     console.log('Result:', result);

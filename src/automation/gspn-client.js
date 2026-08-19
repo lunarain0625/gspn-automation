@@ -279,6 +279,9 @@ class GspnClient {
                 if (!data.partsPoPrefix) {
                     return addPartResult;
                 }
+                if (addPartResult.message === 'No parts to add') {
+                    return addPartResult;
+                }
                 const po = await createPo(businessPage, data);
                 await findJob(businessPage, data);
                 await updateJobStatus(businessPage, 'ST030', 'HP045');

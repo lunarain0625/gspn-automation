@@ -19,9 +19,9 @@ async function run() {
         // await testGetJobInfo(gspnClient);
         // await testUploadJobAttachments(gspnClient)
         // await testGetDeviceInfo(gspnClient);
-        // await testCreateJob(gspnClient);
+        await testCreateJob(gspnClient);
         // await testGetJobStatus(gspnClient);
-        await testUpdateJob(gspnClient);
+        // await testUpdateJob(gspnClient);
         // await testGetJobSheet(gspnClient);
         // await testCompleteJob(gspnClient);
         // await testAddParts(gspnClient);

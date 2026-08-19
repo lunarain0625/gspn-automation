@@ -72,6 +72,11 @@ async function fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobN
     await serialInput.press('Enter');
     await imeiInput.fill(data.productSerialNumber || '');
     await imeiInput.press('Enter');
+    const dialog = await businessPage.waitForEvent('dialog', {timeout: 3000});
+    const dialogMessage = await dialog.message();
+    if (dialogMessage.includes('Invaild IMEI No.')) {
+        throw new Error('❌ Invalid IMEI number');
+    }
     await rightContentsFrame.locator('#progressloading').waitFor({
         state: 'visible'
     }).catch(() => {
@@ -364,9 +369,9 @@ export async function createJob(businessPage, data, repeat = false) {
     let suffixIndex = 0;
     while (errorText?.includes('[G-DD008 : ASC Job No already exists.]')) {
         if (suffixIndex >= 26) {
-            throw new Error('Unable to resolve duplicate ASC Job No after exhausting a-z suffixes');
+            throw new Error('Unable to resolve duplicate ASC Job No after exhausting A-Z suffixes');
         }
-        const suffix = String.fromCharCode(97 + suffixIndex);
+        const suffix = String.fromCharCode(65 + suffixIndex);
         suffixIndex++;
         ascJobNo = baseAscJobNo + suffix;
         console.log(`⚠️ ASC Job No already exists, retrying with ${ascJobNo}`);
