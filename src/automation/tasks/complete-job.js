@@ -56,6 +56,7 @@ export async function completeJob(businessPage, data) {
         readyTimeoutMs: 30000,
         isReady: async () => {
             await handleWarrantyNotice(businessPage);
+            await handleConfirmNotice(businessPage);
             return successDialogSeen;
         }
     });
