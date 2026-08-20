@@ -138,27 +138,27 @@ export async function testUpdateJob(client) {
 
     const data =
         {
-            "source": "MANUAL",
+            "source": "SOLVUP",
             "labType": "L2",
-            "partNos": ["GH82-29451A", "GH82-29450A", "GH82-29454A", "GH82-29456A", "GH82-29461C"],
-            "solvupId": "WI30051267",
-            "vendorRa": "4439420124",
-            "irisSympt": "652",
+            "partNos": ["GH82-35154A", "GH82-35522A", "GH82-35523A"],
+            "solvupId": "12327842",
+            "vendorRa": "4441006839",
+            "irisSympt": "111",
             "irisRepair": "A",
             "repairCode": "SRC500",
             "attachments": [],
-            "faultReport": "no display",
-            "symptomCat1": "L4",
+            "faultReport": "UNIT NOT CHARGING",
+            "symptomCat1": "L2",
             "symptomCat2": "01",
-            "symptomCat3": "02",
+            "symptomCat3": "01",
             "symptomName": null,
-            "purchaseDate": null,
+            "purchaseDate": "24/02/2026",
             "warrantyType": "OW",
             "conditionCode": "1",
-            "diagnosisNote": "replace octa",
-            "quoteRejected": false,
-            "irisSymptQcode": "SRC509",
-            "productSerialNumber": "350383130051267"
+            "diagnosisNote": "REP BUDS",
+            "quoteRejected": true,
+            "irisSymptQcode": "SRC504",
+            "productSerialNumber": "RFAYA1MRPFW"
         }
     ;
     const result = await client.updateJob('repair_info', data);

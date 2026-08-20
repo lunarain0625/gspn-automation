@@ -17,6 +17,7 @@ import {uploadJobAttachments} from "./tasks/upload-job-attachments.js";
 import {searchPartsByModel} from "./tasks/search-parts-by-model.js";
 import {getJobSheet} from "./tasks/get-job-sheet.js";
 import {resetJob} from "./tasks/reset-job.js";
+import {applyInspectionFee} from "./tasks/apply-inspection-fee.js";
 
 const CONFIG = {
     baseUrl: 'https://gspn2.samsungcsportal.com',
@@ -256,6 +257,12 @@ class GspnClient {
                         if (data.attachments && data.attachments.length > 0) {
                             await findJob(businessPage, data);
                             await uploadJobAttachments(businessPage, data);
+                        }
+
+                        //报价被拒,申请inspection fee
+                        if (data.quoteRejected) {
+                            await findJob(businessPage, data);
+                            await applyInspectionFee(businessPage, data);
                         }
                         return result
                     default:
