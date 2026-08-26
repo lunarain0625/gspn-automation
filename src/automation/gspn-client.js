@@ -382,9 +382,9 @@ class GspnClient {
         await this.page.locator('#login_form_all input[name="LOGIN_ID"]').fill(loginUsername);
         await this.page.locator('input[type="password"]').fill(loginPassword);
 
-        const dialogPromise = this.page.waitForEvent('dialog', {timeout: 3000});
+        const dialogPromise = this.page.waitForEvent('dialog', {timeout: 3000}).catch(() => null);
         await this.page.getByRole('img', {name: 'Login'}).click();
-        const dialog = await dialogPromise.catch(() => null);
+        const dialog = await dialogPromise;
 
         if (dialog) {
             const message = dialog.message();
