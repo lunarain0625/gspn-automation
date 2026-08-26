@@ -231,6 +231,7 @@ async function saveCustomerPopup(page2) {
 }
 
 async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
+    let overseasModel = false;
     const warrantyResultInput = rightContentsFrame.locator('#WTY_in_out');
     console.log(`purchaseDate: ${data.purchaseDate}, warrantyType: ${data.warrantyType}`);
     const purchaseDateInput = rightContentsFrame.locator('#PURCHASE_DATE');
@@ -298,11 +299,13 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
     if (data.warrantyType === 'IW') {
         const currentException = await rightContentsFrame.locator('#WTY_EXCEPTION').inputValue().catch(() => '');
         if (currentException === 'VOID4') {
-            throw new Error('❌ Overseas model cannot be processed as IW');
+            // throw new Error('❌ Overseas model cannot be processed as IW');
+            overseasModel = true;
         }
+
     }
 
-    return checkResult;
+    return {checkResult, overseasModel};
 }
 
 export async function createJob(businessPage, data, repeat = false) {
@@ -330,7 +333,7 @@ export async function createJob(businessPage, data, repeat = false) {
     );
 
     await fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo, repeat);
-    const checkResult = await runWarrantyCheck(businessPage, rightContentsFrame, data);
+    const {checkResult, overseasModel} = await runWarrantyCheck(businessPage, rightContentsFrame, data);
     console.log('Warranty Check Result:', checkResult);
     if (checkResult !== data.warrantyType) {
         throw new Error('❌ Warranty check failed');
@@ -403,6 +406,7 @@ export async function createJob(businessPage, data, repeat = false) {
     return {
         success: true,
         checkResult,
+        overseasModel,
         ascJobNo,
         serviceNo
     };
