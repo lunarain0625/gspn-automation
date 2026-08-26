@@ -398,7 +398,7 @@ class GspnClient {
             throw new Error(`Unexpected login dialog: ${message}`);
         }
 
-        await this.page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
+        // await this.page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
         await this.page.getByText('SingleID Authenticator - PIN').click();
 
         console.log('⏳ Waiting for MFA...');

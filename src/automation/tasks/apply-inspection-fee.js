@@ -62,22 +62,14 @@ export async function handleRequestInspectionFee(businessPage, rightFrame, data)
 
         //operations:
         await page2.locator('#REQ_CATEGORY').selectOption('SRC74');
-        let comment = data.repairCode === 'SRC500' ? 'cx rejected the quote.' : 'cx rejected the inspection fee';
+        let comment = data.repairCode === 'SRC500' ? 'Customer rejected the repair quote after the inspection.' : 'Customer rejected the inspection or failed to pay the inspection fee on time.';
         await page2.locator('#REQ_COMMENT').fill(comment);
 
         await page2.locator('#detailForm').getByRole('link', {name: 'Save'}).click();
-        // wait billing complete
-        // const billingCancel = rightFrame
-        //     .locator('#divButtons')
-        //     .getByRole('button', {name: 'Billing Cancel'});
-        // await billingCancel.waitFor({
-        //     state: 'visible',
-        //     timeout: 10000
-        // });
 
         //todo: further check SAW/WER requested
         await waitForLoadingOverlay(businessPage);
-        
+
         console.log('✅ Request Inspection Fee success');
         return true;
     } catch (err) {
