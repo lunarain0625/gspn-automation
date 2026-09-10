@@ -7,7 +7,8 @@ import {
     deliverGoodController,
     addPartsController,
     getDeviceController, gspnStateController, gspnLoginController, gspnLogoutController, getJobStatusController,
-    getJobInfoController, getJobSheetController, searchPartsByModelController, gspnLoginCaptchaController
+    getJobInfoController, getJobSheetController, searchPartsByModelController, gspnLoginCaptchaController,
+    debugListController, debugFileController
 } from '../controllers/gspn.controller.js';
 import {requireApiKey} from '../middleware/auth.middleware.js';
 
@@ -29,5 +30,8 @@ router.get('/get-device-info', getDeviceController);
 router.get('/gspn-client-state', gspnStateController);
 router.post('/login', gspnLoginController)
 router.post('/login/captcha', gspnLoginCaptchaController)
+
+router.get('/debug', debugListController);
+router.get('/debug/:file', debugFileController);
 router.post('/logout', gspnLogoutController)
 export default router;

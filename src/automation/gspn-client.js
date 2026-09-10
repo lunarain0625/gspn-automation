@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
 import fs from 'fs';
+import path from 'path';
 import {searchPart} from './tasks/search-part.js';
 import {createJob} from './tasks/create-job.js';
 import {findJob} from './tasks/find-job.js';
@@ -29,6 +30,8 @@ const CONFIG = {
     loginTimeoutMs: 180000,
     defaultTimeoutMs: 30000,
     captchaTtlMs: 5 * 60 * 1000,
+    debugDir: 'debug',
+    debugKeep: 20,
     credentials: {
         username: process.env.GSPN_USERNAME,
         password: process.env.GSPN_PASSWORD
@@ -224,9 +227,75 @@ class GspnClient {
         return this.businessPage;
     }
 
-    async withBusinessPage(task) {
+    async withBusinessPage(task, label = 'task') {
         const businessPage = await this.ensureBusinessPage();
-        return await task(businessPage);
+
+        try {
+            return await task(businessPage);
+        } catch (error) {
+            const artifact = await this.captureFailureArtifacts(label, error);
+            if (artifact) {
+                error.debugArtifact = artifact;
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * 任务失败时把现场存下来：整页截图 + 每个 frame 的 HTML。
+     * fly.io 上是无头运行、文件系统还是临时的，所以这些文件是出问题后
+     * 唯一能看到页面长什么样的东西，通过 /internal/debug 取回。
+     */
+    async captureFailureArtifacts(label, error) {
+        try {
+            const page = (this.businessPage && !this.businessPage.isClosed())
+                ? this.businessPage
+                : this.page;
+
+            if (!page || page.isClosed()) return null;
+
+            const dir = this.config.debugDir;
+            fs.mkdirSync(dir, {recursive: true});
+
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const base = `${stamp}_${label}`.replace(/[^A-Za-z0-9_-]/g, '_');
+
+            await page.screenshot({
+                path: path.join(dir, `${base}.png`),
+                fullPage: true
+            }).catch((e) => console.warn('⚠️ screenshot failed:', e.message));
+
+            // 表单都在 iframe 里，顶层 HTML 不含内容，所以逐个 frame dump
+            const chunks = [`<!-- label: ${label} -->`, `<!-- error: ${error?.message} -->`];
+            for (const frame of page.frames()) {
+                const html = await frame.content().catch(() => '<!-- unavailable -->');
+                chunks.push(`\n<!-- ===== frame name="${frame.name()}" url="${frame.url()}" ===== -->\n${html}`);
+            }
+            fs.writeFileSync(path.join(dir, `${base}.html`), chunks.join('\n'));
+
+            this.pruneDebugDir(dir);
+
+            console.error(`📸 Saved failure artifacts: ${base}.png / ${base}.html`);
+            return base;
+        } catch (e) {
+            console.warn('⚠️ Could not capture failure artifacts:', e.message);
+            return null;
+        }
+    }
+
+    /** 磁盘是临时的但也别撑爆，只留最近的 debugKeep 组。 */
+    pruneDebugDir(dir) {
+        try {
+            const files = fs.readdirSync(dir)
+                .map((name) => ({name, time: fs.statSync(path.join(dir, name)).mtimeMs}))
+                .sort((a, b) => b.time - a.time);
+
+            for (const file of files.slice(this.config.debugKeep * 2)) {
+                fs.unlinkSync(path.join(dir, file.name));
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not prune debug dir:', e.message);
+        }
     }
 
     async searchPart(keyword) {
@@ -234,7 +303,7 @@ class GspnClient {
         try {
             return await this.withBusinessPage(async () => {
                 return await searchPart(this.context, this.config, keyword);
-            });
+            }, 'searchPart');
         } finally {
             this.isBusy = false;
         }
@@ -245,7 +314,7 @@ class GspnClient {
         try {
             return await this.withBusinessPage(async (businessPage) => {
                 return await searchPartsByModel(businessPage, data);
-            });
+            }, 'searchPartsByModel');
         } finally {
             this.isBusy = false;
         }
@@ -256,7 +325,7 @@ class GspnClient {
         try {
             return await this.withBusinessPage(async () => {
                 return await getDeviceInfoBySn(this.page, serialNumber, purchaseDate, checkWarranty);
-            });
+            }, 'getDeviceInfoBySn');
         } finally {
             this.isBusy = false;
         }
@@ -268,7 +337,7 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 return await getJobStatus(businessPage);
-            });
+            }, 'getJobStatus');
         } finally {
             this.isBusy = false;
         }
@@ -280,7 +349,7 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 return await getJobInfo(businessPage);
-            });
+            }, 'getJobInfo');
         } finally {
             this.isBusy = false;
         }
@@ -292,7 +361,7 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 return await getJobSheet(businessPage);
-            });
+            }, 'getJobSheet');
         } finally {
             this.isBusy = false;
         }
@@ -304,7 +373,7 @@ class GspnClient {
             return await this.withBusinessPage(async (businessPage) => {
                 await findJob(businessPage, data);
                 return await uploadJobAttachments(businessPage, data);
-            });
+            }, 'uploadJobAttachments');
         } finally {
             this.isBusy = false;
         }
@@ -316,7 +385,7 @@ class GspnClient {
         try {
             return await this.withBusinessPage(async (businessPage) => {
                 return await createJob(businessPage, data, false);
-            });
+            }, 'createJob');
         } finally {
             this.isBusy = false;
             await this.keepAliveOnce("[createJob]");
@@ -350,7 +419,7 @@ class GspnClient {
                     default:
                         throw new Error(`Unknown action: ${action}`);
                 }
-            });
+            }, 'updateJob');
 
         } finally {
             this.isBusy = false;
@@ -375,7 +444,7 @@ class GspnClient {
                 await findJob(businessPage, data);
                 await updateJobStatus(businessPage, 'ST030', 'HP045');
                 return po;
-            });
+            }, 'addParts');
 
         } finally {
             this.isBusy = false;
@@ -394,7 +463,7 @@ class GspnClient {
                 await completeJob(businessPage, data);
                 await findJob(businessPage, data);
                 return await billingJob(businessPage, data);
-            });
+            }, 'completeJob');
 
         } finally {
             this.isBusy = false;
@@ -411,7 +480,7 @@ class GspnClient {
                 // 1️⃣ 先找到 job
                 await findJob(businessPage, data);
                 return await deliverGood(businessPage, data);
-            });
+            }, 'deliverGood');
 
         } finally {
             this.isBusy = false;

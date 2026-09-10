@@ -1,4 +1,10 @@
+import fs from 'fs';
+import path from 'path';
 import {gspnClient, gspnQueryClient} from '../../automation/gspn-client.js';
+
+const DEBUG_DIR = 'debug';
+// 文件名由我们自己生成（时间戳_任务名），这里再挡一次目录穿越
+const DEBUG_FILE_PATTERN = /^[A-Za-z0-9_-]+\.(png|html)$/;
 
 const LOGIN_CLIENTS = {
     workflow: gspnClient,
@@ -450,5 +456,50 @@ export async function gspnLogoutController(req, res) {
             success: false,
             message: error.message
         });
+    }
+}
+
+
+/** 列出失败现场文件，最新在前。 */
+export async function debugListController(req, res) {
+    try {
+        if (!fs.existsSync(DEBUG_DIR)) {
+            return res.json({success: true, files: []});
+        }
+
+        const files = fs.readdirSync(DEBUG_DIR)
+            .filter((name) => DEBUG_FILE_PATTERN.test(name))
+            .map((name) => {
+                const stat = fs.statSync(path.join(DEBUG_DIR, name));
+                return {name, size: stat.size, modifiedAt: stat.mtime.toISOString()};
+            })
+            .sort((a, b) => b.modifiedAt.localeCompare(a.modifiedAt));
+
+        return res.json({success: true, files});
+    } catch (error) {
+        console.error('debugListController error:', error);
+        return res.status(500).json({success: false, message: error.message});
+    }
+}
+
+/** 下载单个失败现场文件。 */
+export async function debugFileController(req, res) {
+    try {
+        const {file} = req.params;
+
+        if (!DEBUG_FILE_PATTERN.test(file)) {
+            return res.status(400).json({success: false, message: 'Invalid file name'});
+        }
+
+        const fullPath = path.resolve(DEBUG_DIR, file);
+
+        if (!fullPath.startsWith(path.resolve(DEBUG_DIR) + path.sep) || !fs.existsSync(fullPath)) {
+            return res.status(404).json({success: false, message: 'Not found'});
+        }
+
+        return res.sendFile(fullPath);
+    } catch (error) {
+        console.error('debugFileController error:', error);
+        return res.status(500).json({success: false, message: error.message});
     }
 }
