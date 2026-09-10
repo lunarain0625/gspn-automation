@@ -79,7 +79,9 @@ export async function updateJobRepairInfo(businessPage, data) {
     }
 
     //select type
-    if (data.repairCode === 'SRC038' || data.quoteRejected) {
+    // IS = Inspection。SRC516-LOCK 要走 unlock，不能转成检测单，
+    // 所以这里排除掉，让它落到下面原本的 PS / CI 分支。
+    if ((data.repairCode === 'SRC038' || data.quoteRejected) && !isPhoneLockCase(data)) {
         await rightFrame.locator('#SERVICE_TYPE').selectOption('IS');
     } else if (data.source === 'SOLVUP') {
         await rightFrame.locator('#SERVICE_TYPE').selectOption('PS');
