@@ -1,5 +1,5 @@
 import {clickUntil, handleConfirmNotice, waitForLoadingOverlay} from "../utils/ui-helper.js";
-import {formatGspnDate, normalizeWarrantyResult} from "../utils/gspn-helper.js";
+import {formatGspnDate, isPhoneLockCase, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 import {handleBilling, handleBillingCancel} from "./billing-job.js";
 import {updateJobStatus} from "./update-job-status.js";
 
@@ -27,7 +27,10 @@ export async function updateJobRepairInfo(businessPage, data) {
     await rightFrame.locator('#PURCHASE_DATE').press('Tab');
 
     if (data.warrantyType === 'OW') {
-        if (data.repairCode === 'SRC038') {
+        if (isPhoneLockCase(data)) {
+            // LOCK 优先：否则这里会按 SRC038 把建单时设好的 VOID3 覆盖成 VOID9
+            await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID3');
+        } else if (data.repairCode === 'SRC038') {
             await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID9')
         } else {
             await rightFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');

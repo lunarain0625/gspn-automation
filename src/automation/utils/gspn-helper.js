@@ -76,3 +76,11 @@ export function normalizePhone(phone) {
 
     return normalized;
 }
+
+// SRC516-LOCK：管理员要在 GSPN 手工走 unlock 流程，这类单子的保修豁免和
+// ASC job no 都跟普通维修不一样，判断散在 create-job 和 update-job 两处，放这里共用。
+export const PHONE_LOCK_SYMPTOM_CODE = 'SRC516';
+
+export function isPhoneLockCase(data) {
+    return data?.irisSymptQcode === PHONE_LOCK_SYMPTOM_CODE;
+}

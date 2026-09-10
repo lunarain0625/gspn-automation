@@ -5,7 +5,7 @@ import {
     findFirstVisible,
     selectVisibleOptionById
 } from "../utils/ui-helper.js";
-import {formatGspnDate, normalizePhone, normalizeState, normalizeWarrantyResult} from "../utils/gspn-helper.js";
+import {formatGspnDate, isPhoneLockCase, normalizePhone, normalizeState, normalizeWarrantyResult} from "../utils/gspn-helper.js";
 
 function getLeftMenuScrollFrame(businessPage) {
     return businessPage
@@ -237,7 +237,10 @@ async function runWarrantyCheck(businessPage, rightContentsFrame, data) {
     const purchaseDateInput = rightContentsFrame.locator('#PURCHASE_DATE');
     await purchaseDateInput.fill(formatGspnDate(data.purchaseDate));
     if (data.warrantyType === 'OW') {
-        await rightContentsFrame.locator('#WTY_EXCEPTION').selectOption('VOID1');
+        // SRC516-LOCK 要走 unlock，保修豁免选 VOID3-Phone Lock 而不是默认的撞击损坏
+        await rightContentsFrame
+            .locator('#WTY_EXCEPTION')
+            .selectOption(isPhoneLockCase(data) ? 'VOID3' : 'VOID1');
     }
 
     async function readWarrantyResult() {
@@ -325,11 +328,16 @@ export async function createJob(businessPage, data, repeat = false) {
 
     const solvupPrefix = 'TSOLVUP';
     const walkInPrefix = 'TWI';
+    const phoneLockPrefix = 'FRP';
 
+    // SRC516-LOCK 的单子按 FRP+IMEI后6位 编号，管理员据此认出要走 unlock 流程。
+    // IMEI 和序列号在这套系统里是同一个值（上面 SERIAL_NO / IMEI 两个框填的都是它）。
     let ascJobNo = data.ascJobNo || (
-        data.source === 'SOLVUP'
-            ? `${solvupPrefix}${data.solvupId}`
-            : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
+        isPhoneLockCase(data)
+            ? `${phoneLockPrefix}${String(data.productSerialNumber || '').slice(-6)}`
+            : data.source === 'SOLVUP'
+                ? `${solvupPrefix}${data.solvupId}`
+                : `${walkInPrefix}${String(data.productSerialNumber || '').slice(-8)}`
     );
 
     await fillBaseOrderInfo(businessPage, rightContentsFrame, data, ascJobNo, repeat);
