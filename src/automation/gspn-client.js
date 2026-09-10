@@ -54,6 +54,10 @@ class GspnClient {
         this.isLoggedIn = false;
         // 等待人工输入验证码的登录。页面必须保持存活，所以状态挂在实例上。
         this.pendingLogin = null;
+        // 登录尝试用的独立 context，成功后才替换掉正在用的会话
+        this.loginContext = null;
+        this.loginPage = null;
+        this.isLoggingIn = false;
         this.currentCredentials = {
             username: this.config.credentials.username,
             password: this.config.credentials.password
@@ -72,6 +76,63 @@ class GspnClient {
         this.context = await this.browser.newContext({storageState});
         this.page = await this.context.newPage();
         this.page.setDefaultTimeout(this.config.defaultTimeoutMs);
+    }
+
+    /**
+     * 登录用的干净 context。必须不带旧 cookie，否则 GSPN 会直接跳回 main.jsp，
+     * 也就没法换账号登录。
+     */
+    async openLoginContext() {
+        await this.initBrowser();
+        await this.closeLoginContext();
+
+        this.loginContext = await this.browser.newContext();
+        this.loginPage = await this.loginContext.newPage();
+        this.loginPage.setDefaultTimeout(this.config.defaultTimeoutMs);
+
+        return this.loginPage;
+    }
+
+    async closeLoginContext() {
+        if (this.loginPage) {
+            await this.loginPage.close().catch(() => {
+            });
+            this.loginPage = null;
+        }
+
+        if (this.loginContext) {
+            await this.loginContext.close().catch(() => {
+            });
+            this.loginContext = null;
+        }
+    }
+
+    /**
+     * 登录成功后才用新会话顶掉旧的。
+     * 反过来说：登录失败时旧会话原封不动，不会因为试错密码就把人踢下线。
+     */
+    async promoteLoginContext() {
+        const newContext = this.loginContext;
+        const newPage = this.loginPage;
+
+        this.loginContext = null;
+        this.loginPage = null;
+
+        if (this.businessPage) {
+            await this.businessPage.close().catch(() => {
+            });
+            this.businessPage = null;
+        }
+
+        if (this.context && this.context !== newContext) {
+            await this.context.close().catch(() => {
+            });
+        }
+
+        this.context = newContext;
+        this.page = newPage;
+
+        await this.context.storageState({path: this.config.storagePath});
     }
 
     async init() {
@@ -98,9 +159,20 @@ class GspnClient {
 
     async ensureLoggedIn() {
         const alive = await this.checkSessionAlive();
-        if (!alive) {
-            this.isLoggedIn = false;
-            await this.performLogin();
+
+        // 会话是活的就把标志位补上 —— 进程重启后 state.json 还在、
+        // 但 isLoggedIn 是 false，portal 会误显示成 OFFLINE。
+        this.isLoggedIn = alive;
+
+        if (alive) return;
+
+        const result = await this.performLogin();
+
+        // 自动续登录失败时直接抛出原因，否则后面会在找 frame 时报一个看不懂的错
+        if (!result.success) {
+            throw new Error(
+                `GSPN auto login failed [${result.code ?? 'UNKNOWN'}]: ${result.message}`
+            );
         }
     }
 
@@ -387,7 +459,9 @@ class GspnClient {
 
         this.pendingLogin = null;
 
-        await this.page.goto(this.config.loginUrl, {
+        const loginPage = await this.openLoginContext();
+
+        await loginPage.goto(this.config.loginUrl, {
             waitUntil: 'domcontentloaded'
         });
 
@@ -399,15 +473,25 @@ class GspnClient {
      * 首次登录和补交验证码后的重试都走这里，保证两条路径行为一致。
      */
     async submitLoginForm(loginUsername, loginPassword, captchaText = null) {
-        await this.page.locator(LOGIN_SELECTORS.loginId).fill(loginUsername);
-        await this.page.locator(LOGIN_SELECTORS.password).fill(loginPassword);
+        const page = this.loginPage;
 
-        if (captchaText !== null) {
-            await this.page.locator(LOGIN_SELECTORS.captchaResponse).fill(captchaText);
+        if (!page || page.isClosed()) {
+            return {
+                success: false,
+                code: 'LOGIN_PAGE_LOST',
+                message: 'The login page was closed, please start the login again'
+            };
         }
 
-        const dialogPromise = this.page.waitForEvent('dialog', {timeout: 3000}).catch(() => null);
-        await this.page.getByRole('img', {name: 'Login'}).click();
+        await page.locator(LOGIN_SELECTORS.loginId).fill(loginUsername);
+        await page.locator(LOGIN_SELECTORS.password).fill(loginPassword);
+
+        if (captchaText !== null) {
+            await page.locator(LOGIN_SELECTORS.captchaResponse).fill(captchaText);
+        }
+
+        const dialogPromise = page.waitForEvent('dialog', {timeout: 3000}).catch(() => null);
+        await page.getByRole('img', {name: 'Login'}).click();
         const dialog = await dialogPromise;
 
         if (dialog) {
@@ -450,6 +534,7 @@ class GspnClient {
 
             console.error(`❌ Login rejected by GSPN [${code}]: ${message}`);
             this.pendingLogin = null;
+            await this.closeLoginContext();
 
             return {
                 success: false,
@@ -458,18 +543,19 @@ class GspnClient {
             };
         }
 
-        // await this.page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
-        await this.page.getByText('SingleID Authenticator - PIN').click();
+        // await page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
+        await page.getByText('SingleID Authenticator - PIN').click();
 
         console.log('⏳ Waiting for MFA...');
 
-        const mfaOk = await this.page.waitForURL('**/main.jsp', {
+        const mfaOk = await page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
         }).then(() => true).catch(() => false);
 
         if (!mfaOk) {
             console.error('❌ MFA verification timed out');
             this.pendingLogin = null;
+            await this.closeLoginContext();
             return {
                 success: false,
                 code: 'MFA_TIMEOUT',
@@ -478,9 +564,10 @@ class GspnClient {
         }
 
         this.pendingLogin = null;
+        // 到这一步才动旧会话
+        await this.promoteLoginContext();
         this.isLoggedIn = true;
         console.log('✅ Login success');
-        await this.context.storageState({path: this.config.storagePath});
         return {
             success: true,
             message: 'Login success'
@@ -489,7 +576,7 @@ class GspnClient {
 
     /** 把验证码图片截成 data URL。截图而不是读 src，因为图片地址依赖会话 cookie。 */
     async captureCaptcha() {
-        const image = this.page.locator(LOGIN_SELECTORS.captchaImage);
+        const image = this.loginPage.locator(LOGIN_SELECTORS.captchaImage);
 
         try {
             await image.waitFor({state: 'visible', timeout: 15000});
@@ -513,6 +600,7 @@ class GspnClient {
 
         if (Date.now() - this.pendingLogin.createdAt > this.config.captchaTtlMs) {
             this.pendingLogin = null;
+            await this.closeLoginContext();
             return {
                 success: false,
                 code: 'CAPTCHA_EXPIRED',
@@ -520,8 +608,9 @@ class GspnClient {
             };
         }
 
-        if (!this.page || this.page.isClosed()) {
+        if (!this.loginPage || this.loginPage.isClosed()) {
             this.pendingLogin = null;
+            await this.closeLoginContext();
             return {
                 success: false,
                 code: 'LOGIN_PAGE_LOST',
@@ -530,7 +619,15 @@ class GspnClient {
         }
 
         const {username, password} = this.pendingLogin;
-        const result = await this.submitLoginForm(username, password, captchaText);
+
+        this.isLoggingIn = true;
+        let result;
+        try {
+            result = await this.submitLoginForm(username, password, captchaText);
+        } finally {
+            // 验证码输错会再要一次，那就继续挡着
+            this.isLoggingIn = Boolean(this.pendingLogin);
+        }
 
         if (result.success) {
             this.startKeepAlive();
@@ -540,8 +637,8 @@ class GspnClient {
     }
 
     async keepAliveOnce(label = "[trigger by timer]") {
-        console.log(label, "isBusy:", this.isBusy, "page alive:", this.page && !this.page.isClosed());
-        if (this.isBusy || !this.page || this.page.isClosed()) return;
+        console.log(label, "isBusy:", this.isBusy, "isLoggingIn:", this.isLoggingIn, "page alive:", this.page && !this.page.isClosed());
+        if (this.isBusy || this.isLoggingIn || !this.page || this.page.isClosed()) return;
 
         try {
             await this.page.goto(this.config.dashboardUrl, {
@@ -611,6 +708,8 @@ class GspnClient {
         this.isBusy = false;
         // 页面即将销毁，等待验证码的登录也就作废了
         this.pendingLogin = null;
+        this.isLoggingIn = false;
+        await this.closeLoginContext();
 
         // 停止 keep alive
         if (this.keepAliveTimer) {
@@ -645,7 +744,9 @@ class GspnClient {
 
     async login(usePersonalAccount = false, username = null, password = null) {
         await this.initBrowser();
-        await this.logout();
+
+        // 注意：这里**不能**先 logout()。登录跑在独立 context 里，
+        // 成功了才由 promoteLoginContext() 替换旧会话 —— 密码试错不会把人踢下线。
         if (!usePersonalAccount) {
             // 默认账号
             this.currentCredentials = {
@@ -653,9 +754,17 @@ class GspnClient {
                 password: this.config.credentials.password,
             };
         }
-        const result = usePersonalAccount
-            ? await this.performLogin(username, password)
-            : await this.performLogin();
+
+        this.isLoggingIn = true;
+        let result;
+        try {
+            result = usePersonalAccount
+                ? await this.performLogin(username, password)
+                : await this.performLogin();
+        } finally {
+            // 等验证码期间要继续挡住 keep alive，别让它把登录页搅了
+            this.isLoggingIn = Boolean(this.pendingLogin);
+        }
 
         console.log('Login result:', result);
         if (!result.success) {
