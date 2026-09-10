@@ -448,13 +448,10 @@ class GspnClient {
             loginUsername = this.currentCredentials.username;
             loginPassword = this.currentCredentials.password;
         } else {
-            // 指定账号登录
+            // 指定账号登录。凭据要等登录成功才落到 currentCredentials，
+            // 否则一次失败的个人账号登录会把它污染，后续自动续登录会一直拿错密码去试。
             loginUsername = username;
             loginPassword = password;
-            this.currentCredentials = {
-                username,
-                password,
-            };
         }
 
         this.pendingLogin = null;
@@ -566,6 +563,10 @@ class GspnClient {
         this.pendingLogin = null;
         // 到这一步才动旧会话
         await this.promoteLoginContext();
+        this.currentCredentials = {
+            username: loginUsername,
+            password: loginPassword
+        };
         this.isLoggedIn = true;
         console.log('✅ Login success');
         return {
