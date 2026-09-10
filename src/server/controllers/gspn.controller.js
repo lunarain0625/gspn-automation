@@ -1,5 +1,67 @@
 import {gspnClient, gspnQueryClient} from '../../automation/gspn-client.js';
 
+const LOGIN_CLIENTS = {
+    workflow: gspnClient,
+    query: gspnQueryClient
+};
+
+const LOGIN_ORDER = ['workflow', 'query'];
+
+// 两个 client 依次登录，中途可能被 captcha 打断然后由 /login/captcha 接着往下走，
+// 所以凭据要跨请求留着。单机部署（fly.io min_machines_running=1），放内存够用。
+let pendingCredentials = null;
+
+function clientState(client) {
+    return {
+        isLoggedIn: client.isLoggedIn,
+        isBusy: client.isBusy,
+        username: client.currentCredentials.username,
+        awaitingCaptcha: Boolean(client.pendingLogin)
+    };
+}
+
+async function loginOneClient(name) {
+    const client = LOGIN_CLIENTS[name];
+
+    // 已经登上的不要再 login()，因为 login() 会先 logout() 把会话清掉
+    if (client.isLoggedIn) {
+        return {success: true, message: 'Already logged in'};
+    }
+
+    const {usePersonalAccount, username, password} = pendingCredentials ?? {};
+    return await client.login(usePersonalAccount, username, password);
+}
+
+async function runLoginSequence() {
+    for (const name of LOGIN_ORDER) {
+        const result = await loginOneClient(name);
+
+        if (!result.success) {
+            return {
+                success: false,
+                code: result.code ?? 'LOGIN_FAILED',
+                message: result.message,
+                failedClient: name,
+                captchaImage: result.captchaImage ?? null
+            };
+        }
+    }
+
+    pendingCredentials = null;
+    return {
+        success: true,
+        message: 'Both clients logged in successfully'
+    };
+}
+
+function loginResponse(result) {
+    return {
+        ...result,
+        workflowClient: clientState(gspnClient),
+        queryClient: clientState(gspnQueryClient)
+    };
+}
+
 //query client controller
 export async function searchPartController(req, res) {
     try {
@@ -310,48 +372,62 @@ export async function gspnLoginController(req, res) {
     try {
         const {usePersonalAccount, username, password} = req.body;
         console.log('gspnLoginController called with username:', username);
-        
-        // Login both clients
-        const workflowResult = await gspnClient.login(usePersonalAccount, username, password);
 
-        // workflow client 失败（密码错、密码过期等）时 query client 必然也会失败，
-        // 直接返回，别让用户再白等一轮 MFA 超时。
-        if (!workflowResult.success) {
-            return res.json({
-                success: false,
-                code: workflowResult.code ?? 'LOGIN_FAILED',
-                message: workflowResult.message,
-                failedClient: 'workflow',
-                workflowClient: workflowResult,
-                queryClient: {
-                    success: false,
-                    code: 'SKIPPED',
-                    message: 'Skipped because workflow client login failed'
-                }
-            });
-        }
+        pendingCredentials = {usePersonalAccount, username, password};
 
-        const queryResult = await gspnQueryClient.login(usePersonalAccount, username, password);
-
-        if (!queryResult.success) {
-            return res.json({
-                success: false,
-                code: queryResult.code ?? 'LOGIN_FAILED',
-                message: queryResult.message,
-                failedClient: 'query',
-                workflowClient: workflowResult,
-                queryClient: queryResult
-            });
-        }
-
-        return res.json({
-            success: true,
-            message: 'Both clients logged in successfully',
-            workflowClient: workflowResult,
-            queryClient: queryResult
-        });
+        const result = await runLoginSequence();
+        return res.json(loginResponse(result));
     } catch (error) {
         console.error('gspnLoginController error:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+/**
+ * 人工输入验证码后继续登录。
+ * 该 client 过了之后自动接着登下一个 —— 下一个可能又要验证码，前端要能连着弹。
+ */
+export async function gspnLoginCaptchaController(req, res) {
+    try {
+        const {client = 'workflow', captchaText} = req.body;
+
+        if (!captchaText) {
+            return res.status(400).json({
+                success: false,
+                message: 'captchaText is required'
+            });
+        }
+
+        const target = LOGIN_CLIENTS[client];
+
+        if (!target) {
+            return res.status(400).json({
+                success: false,
+                message: `Unknown client: ${client}`
+            });
+        }
+
+        console.log(`gspnLoginCaptchaController: submitting captcha for ${client} client`);
+
+        const result = await target.submitCaptcha(captchaText);
+
+        if (!result.success) {
+            return res.json(loginResponse({
+                success: false,
+                code: result.code ?? 'LOGIN_FAILED',
+                message: result.message,
+                failedClient: client,
+                captchaImage: result.captchaImage ?? null
+            }));
+        }
+
+        // 这个 client 过了，继续登剩下的（已登录的会被跳过）
+        return res.json(loginResponse(await runLoginSequence()));
+    } catch (error) {
+        console.error('gspnLoginCaptchaController error:', error);
         return res.status(500).json({
             success: false,
             message: error.message

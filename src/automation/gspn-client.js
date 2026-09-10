@@ -28,10 +28,18 @@ const CONFIG = {
     sessionCheckIntervalMs: 5 * 60 * 1000,
     loginTimeoutMs: 180000,
     defaultTimeoutMs: 30000,
+    captchaTtlMs: 5 * 60 * 1000,
     credentials: {
         username: process.env.GSPN_USERNAME,
         password: process.env.GSPN_PASSWORD
     }
+};
+
+const LOGIN_SELECTORS = {
+    loginId: '#login_form_all input[name="LOGIN_ID"]',
+    password: 'input[type="password"]',
+    captchaImage: '#recaptcha_challenge_image',
+    captchaResponse: '#recaptcha_response_field'
 };
 
 class GspnClient {
@@ -44,6 +52,8 @@ class GspnClient {
         this.keepAliveTimer = null;
         this.isBusy = false;
         this.isLoggedIn = false;
+        // 等待人工输入验证码的登录。页面必须保持存活，所以状态挂在实例上。
+        this.pendingLogin = null;
         this.currentCredentials = {
             username: this.config.credentials.username,
             password: this.config.credentials.password
@@ -375,12 +385,26 @@ class GspnClient {
             };
         }
 
+        this.pendingLogin = null;
+
         await this.page.goto(this.config.loginUrl, {
             waitUntil: 'domcontentloaded'
         });
 
-        await this.page.locator('#login_form_all input[name="LOGIN_ID"]').fill(loginUsername);
-        await this.page.locator('input[type="password"]').fill(loginPassword);
+        return await this.submitLoginForm(loginUsername, loginPassword);
+    }
+
+    /**
+     * 填表 → 点登录 → 处理弹窗 → 等 MFA。
+     * 首次登录和补交验证码后的重试都走这里，保证两条路径行为一致。
+     */
+    async submitLoginForm(loginUsername, loginPassword, captchaText = null) {
+        await this.page.locator(LOGIN_SELECTORS.loginId).fill(loginUsername);
+        await this.page.locator(LOGIN_SELECTORS.password).fill(loginPassword);
+
+        if (captchaText !== null) {
+            await this.page.locator(LOGIN_SELECTORS.captchaResponse).fill(captchaText);
+        }
 
         const dialogPromise = this.page.waitForEvent('dialog', {timeout: 3000}).catch(() => null);
         await this.page.getByRole('img', {name: 'Login'}).click();
@@ -390,6 +414,34 @@ class GspnClient {
             const message = dialog.message();
             await dialog.accept();
 
+            // 连错两次后 GSPN 会先要验证码，验证码通过了才去校验密码。
+            // 所以这里不能当成密码错误处理，得把图捞出来交给人。
+            if (/captcha/i.test(message)) {
+                console.log('🖼️ GSPN is asking for a captcha');
+                const captchaImage = await this.captureCaptcha();
+
+                if (!captchaImage) {
+                    return {
+                        success: false,
+                        code: 'CAPTCHA_UNAVAILABLE',
+                        message: `${message} (captcha image could not be captured)`
+                    };
+                }
+
+                this.pendingLogin = {
+                    username: loginUsername,
+                    password: loginPassword,
+                    createdAt: Date.now()
+                };
+
+                return {
+                    success: false,
+                    code: 'CAPTCHA_REQUIRED',
+                    message,
+                    captchaImage
+                };
+            }
+
             // GSPN 用弹窗报所有登录失败原因。已知的单独归类，未知的原样透传，
             // 这样密码过期之类没见过的情况也能在 portal 上看到 Samsung 原话。
             const code = message.includes('GSPN ID or password is not matched')
@@ -397,6 +449,7 @@ class GspnClient {
                 : 'LOGIN_REJECTED';
 
             console.error(`❌ Login rejected by GSPN [${code}]: ${message}`);
+            this.pendingLogin = null;
 
             return {
                 success: false,
@@ -416,12 +469,15 @@ class GspnClient {
 
         if (!mfaOk) {
             console.error('❌ MFA verification timed out');
+            this.pendingLogin = null;
             return {
                 success: false,
                 code: 'MFA_TIMEOUT',
                 message: `MFA verification timed out after ${this.config.loginTimeoutMs / 1000}s`
             };
         }
+
+        this.pendingLogin = null;
         this.isLoggedIn = true;
         console.log('✅ Login success');
         await this.context.storageState({path: this.config.storagePath});
@@ -429,6 +485,58 @@ class GspnClient {
             success: true,
             message: 'Login success'
         };
+    }
+
+    /** 把验证码图片截成 data URL。截图而不是读 src，因为图片地址依赖会话 cookie。 */
+    async captureCaptcha() {
+        const image = this.page.locator(LOGIN_SELECTORS.captchaImage);
+
+        try {
+            await image.waitFor({state: 'visible', timeout: 15000});
+            const buffer = await image.screenshot();
+            return `data:image/png;base64,${buffer.toString('base64')}`;
+        } catch (error) {
+            console.warn('⚠️ Could not capture captcha image:', error.message);
+            return null;
+        }
+    }
+
+    /** 人工输入验证码后继续登录。验证码错会再给一张新图，可以反复提交。 */
+    async submitCaptcha(captchaText) {
+        if (!this.pendingLogin) {
+            return {
+                success: false,
+                code: 'NO_PENDING_LOGIN',
+                message: 'No login is waiting for a captcha'
+            };
+        }
+
+        if (Date.now() - this.pendingLogin.createdAt > this.config.captchaTtlMs) {
+            this.pendingLogin = null;
+            return {
+                success: false,
+                code: 'CAPTCHA_EXPIRED',
+                message: 'The captcha expired, please start the login again'
+            };
+        }
+
+        if (!this.page || this.page.isClosed()) {
+            this.pendingLogin = null;
+            return {
+                success: false,
+                code: 'LOGIN_PAGE_LOST',
+                message: 'The login page was closed, please start the login again'
+            };
+        }
+
+        const {username, password} = this.pendingLogin;
+        const result = await this.submitLoginForm(username, password, captchaText);
+
+        if (result.success) {
+            this.startKeepAlive();
+        }
+
+        return result;
     }
 
     async keepAliveOnce(label = "[trigger by timer]") {
@@ -501,6 +609,8 @@ class GspnClient {
 
         this.isLoggedIn = false;
         this.isBusy = false;
+        // 页面即将销毁，等待验证码的登录也就作废了
+        this.pendingLogin = null;
 
         // 停止 keep alive
         if (this.keepAliveTimer) {
