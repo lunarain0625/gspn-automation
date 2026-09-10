@@ -313,13 +313,42 @@ export async function gspnLoginController(req, res) {
         
         // Login both clients
         const workflowResult = await gspnClient.login(usePersonalAccount, username, password);
+
+        // workflow client 失败（密码错、密码过期等）时 query client 必然也会失败，
+        // 直接返回，别让用户再白等一轮 MFA 超时。
+        if (!workflowResult.success) {
+            return res.json({
+                success: false,
+                code: workflowResult.code ?? 'LOGIN_FAILED',
+                message: workflowResult.message,
+                failedClient: 'workflow',
+                workflowClient: workflowResult,
+                queryClient: {
+                    success: false,
+                    code: 'SKIPPED',
+                    message: 'Skipped because workflow client login failed'
+                }
+            });
+        }
+
         const queryResult = await gspnQueryClient.login(usePersonalAccount, username, password);
-        
+
+        if (!queryResult.success) {
+            return res.json({
+                success: false,
+                code: queryResult.code ?? 'LOGIN_FAILED',
+                message: queryResult.message,
+                failedClient: 'query',
+                workflowClient: workflowResult,
+                queryClient: queryResult
+            });
+        }
+
         return res.json({
+            success: true,
+            message: 'Both clients logged in successfully',
             workflowClient: workflowResult,
-            queryClient: queryResult,
-            success: workflowResult.success && queryResult.success,
-            message: workflowResult.success && queryResult.success ? 'Both clients logged in successfully' : 'One or more clients failed to login'
+            queryClient: queryResult
         });
     } catch (error) {
         console.error('gspnLoginController error:', error);

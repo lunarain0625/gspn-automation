@@ -389,13 +389,20 @@ class GspnClient {
         if (dialog) {
             const message = dialog.message();
             await dialog.accept();
-            if (message.includes('GSPN ID or password is not matched')) {
-                return {
-                    success: false,
-                    message
-                };
-            }
-            throw new Error(`Unexpected login dialog: ${message}`);
+
+            // GSPN 用弹窗报所有登录失败原因。已知的单独归类，未知的原样透传，
+            // 这样密码过期之类没见过的情况也能在 portal 上看到 Samsung 原话。
+            const code = message.includes('GSPN ID or password is not matched')
+                ? 'INVALID_CREDENTIALS'
+                : 'LOGIN_REJECTED';
+
+            console.error(`❌ Login rejected by GSPN [${code}]: ${message}`);
+
+            return {
+                success: false,
+                code,
+                message
+            };
         }
 
         // await this.page.getByRole('link', {name: 'MFA (Multi-Factor'}).click();
@@ -403,11 +410,18 @@ class GspnClient {
 
         console.log('⏳ Waiting for MFA...');
 
-        await this.page.waitForURL('**/main.jsp', {
+        const mfaOk = await this.page.waitForURL('**/main.jsp', {
             timeout: this.config.loginTimeoutMs
-        }).catch(() => {
-            throw new Error('❌ MFA verification timed out');
-        });
+        }).then(() => true).catch(() => false);
+
+        if (!mfaOk) {
+            console.error('❌ MFA verification timed out');
+            return {
+                success: false,
+                code: 'MFA_TIMEOUT',
+                message: `MFA verification timed out after ${this.config.loginTimeoutMs / 1000}s`
+            };
+        }
         this.isLoggedIn = true;
         console.log('✅ Login success');
         await this.context.storageState({path: this.config.storagePath});
